@@ -1,6 +1,7 @@
 import React from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { DashboardContent } from "@/components/client/DashboardContent";
 
 const DashbaordPage = async () => {
   const user = await currentUser();
@@ -14,7 +15,12 @@ const DashbaordPage = async () => {
       clerkId: user.id,
     },
   });
-  return <div>Welcome, {dbUser?.name ?? "User"}!</div>;
+  return (
+    <div>
+      Welcome, {dbUser?.name ?? "User"}!
+      <DashboardContent />
+    </div>
+  );
 };
 
 export default DashbaordPage;
