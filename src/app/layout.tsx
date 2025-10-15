@@ -8,6 +8,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import NavbarWrapper from "@/components/NavbarWrapper";
 import { Navbar } from "@/components/Navbar";
+import Loader from "./loading";
 
 export const metadata: Metadata = {
   title: "Client Dashboard",
@@ -43,7 +44,7 @@ export default function RootLayout({
         >
           <NavbarWrapper />
           {/* <Navbar /> */}
-          <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
+          <Suspense fallback={<Loader />}>{children}</Suspense>
           <Analytics />
         </body>
       </html>

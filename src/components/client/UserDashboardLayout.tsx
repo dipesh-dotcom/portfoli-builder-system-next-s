@@ -1,23 +1,30 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Moon,
   Sun,
   Bell,
-  User,
   LayoutDashboard,
   UserCircle,
   GraduationCap,
-  Lightbulb,
   Menu,
   X,
+  Briefcase,
+  FolderKanban,
+  Award,
+  FileText,
+  Wrench,
+  Languages,
+  Cog,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
+import GlobalLoading from "@/app/loading";
 
 export function UserDashboardLayout({
   children,
@@ -27,6 +34,8 @@ export function UserDashboardLayout({
   const [isDark, setIsDark] = useState(false);
   const [activeNav, setActiveNav] = useState("Dashboard");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const pathName = usePathname();
 
   useEffect(() => {
     const stored = localStorage.getItem("theme");
@@ -49,10 +58,19 @@ export function UserDashboardLayout({
 
   const navItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-    // { name: "Profile", icon: UserCircle, href: "/profile" },
+    { name: "Profile", icon: UserCircle, href: "/profile" },
     { name: "Education", icon: GraduationCap, href: "/education" },
-    { name: "Skill", icon: Lightbulb, href: "/skill" },
+    { name: "Experience", icon: Briefcase, href: "/experience" },
+    { name: "Project", icon: FolderKanban, href: "/project" },
+    { name: "Achievement", icon: Award, href: "/achievement" },
+    { name: "Resume", icon: FileText, href: "/resume" },
+    { name: "Skill", icon: Wrench, href: "/skill" },
+    { name: "Language", icon: Languages, href: "/language" },
   ];
+
+  const titleMap: Record<string, string> = Object.fromEntries(
+    navItems.map((item) => [item.href, item.name])
+  );
 
   return (
     <div className="flex h-screen bg-background grid-background overflow-hidden">
@@ -169,7 +187,7 @@ export function UserDashboardLayout({
               <Menu className="h-5 w-5" />
             </Button>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">
-              Dashboard
+              {titleMap[pathName] || "Dashboard"}
             </h1>
           </div>
 
@@ -219,7 +237,9 @@ export function UserDashboardLayout({
           </div>
         </motion.header>
 
-        <main className="flex-1 overflow-auto p-4 md:p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-6">
+          <Suspense fallback={<GlobalLoading />}>{children}</Suspense>
+        </main>
       </div>
     </div>
   );

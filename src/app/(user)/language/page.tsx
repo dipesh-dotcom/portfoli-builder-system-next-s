@@ -3,92 +3,80 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThreeBackground } from "@/components/ThreeBackground";
-import { EducationForm } from "@/components/forms/EducationForm";
-import { EducationCard } from "@/components/cards/EducationCard";
+import { LanguageForm } from "@/components/forms/LanguageForm";
+import { LanguageCard } from "@/components/cards/LanguageCard";
 import { Button } from "@/components/ui/button";
-import { Plus, GraduationCap } from "lucide-react";
+import { Plus, Globe } from "lucide-react";
 
-type EducationEntry = {
+type LanguageEntry = {
   id: string;
   user_id: string;
-  institute_name: string;
-  degree: string;
-  start_year: string;
-  end_year: string;
+  name: string;
+  proficiency: string;
   created_at: string;
   updated_at: string;
 };
 
-export default async function EducationPage() {
-  const [educations, setEducations] = useState<EducationEntry[]>([
+export default async function LanguagePage() {
+  const [languages, setLanguages] = useState<LanguageEntry[]>([
     {
       id: "1",
       user_id: "user_1",
-      institute_name: "Stanford University",
-      degree: "Master's Degree",
-      start_year: "2020",
-      end_year: "2022",
+      name: "English",
+      proficiency: "Native",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
     {
       id: "2",
       user_id: "user_1",
-      institute_name: "MIT",
-      degree: "Bachelor's Degree",
-      start_year: "2016",
-      end_year: "2020",
+      name: "Spanish",
+      proficiency: "Intermediate",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     },
   ]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingEducation, setEditingEducation] =
-    useState<EducationEntry | null>(null);
+  const [editingLanguage, setEditingLanguage] = useState<LanguageEntry | null>(
+    null
+  );
 
-  const handleSubmit = (data: {
-    institute_name: string;
-    degree: string;
-    start_year: string;
-    end_year: string;
-  }) => {
-    if (editingEducation) {
-      // Update existing education
-      setEducations(
-        educations.map((edu) =>
-          edu.id === editingEducation.id
-            ? { ...edu, ...data, updated_at: new Date().toISOString() }
-            : edu
+  const handleSubmit = (data: { name: string; proficiency: string }) => {
+    if (editingLanguage) {
+      setLanguages(
+        languages.map((lang) =>
+          lang.id === editingLanguage.id
+            ? { ...lang, ...data, updated_at: new Date().toISOString() }
+            : lang
         )
       );
     } else {
-      // Add new education
-      const newEducation: EducationEntry = {
+      const newLanguage: LanguageEntry = {
         id: Date.now().toString(),
         user_id: "user_1",
         ...data,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
-      setEducations([newEducation, ...educations]);
+      setLanguages([newLanguage, ...languages]);
     }
     setIsFormOpen(false);
-    setEditingEducation(null);
+    setEditingLanguage(null);
   };
 
   const handleDelete = (id: string) => {
-    setEducations(educations.filter((edu) => edu.id !== id));
+    setLanguages(languages.filter((lang) => lang.id !== id));
   };
 
-  const handleEdit = (education: EducationEntry) => {
-    setEditingEducation(education);
+  const handleEdit = (language: LanguageEntry) => {
+    setEditingLanguage(language);
     setIsFormOpen(true);
   };
 
   const handleCancel = () => {
     setIsFormOpen(false);
-    setEditingEducation(null);
+    setEditingLanguage(null);
   };
 
   return (
@@ -103,12 +91,12 @@ export default async function EducationPage() {
           <div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
-                <GraduationCap className="w-8 h-8 text-primary" />
+                <Globe className="w-8 h-8 text-primary" />
               </div>
-              Education
+              Languages
             </h1>
             <p className="text-muted-foreground mt-2">
-              Manage your educational background and qualifications
+              Manage your language skills and proficiency
             </p>
           </div>
           {!isFormOpen && (
@@ -118,7 +106,7 @@ export default async function EducationPage() {
                 className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Plus className="w-5 h-5 mr-2" />
-                Add Education
+                Add Language
               </Button>
             </motion.div>
           )}
@@ -132,16 +120,14 @@ export default async function EducationPage() {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <EducationForm
+              <LanguageForm
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 initialData={
-                  editingEducation
+                  editingLanguage
                     ? {
-                        institute_name: editingEducation.institute_name,
-                        degree: editingEducation.degree,
-                        start_year: editingEducation.start_year,
-                        end_year: editingEducation.end_year,
+                        name: editingLanguage.name,
+                        proficiency: editingLanguage.proficiency,
                       }
                     : undefined
                 }
@@ -157,7 +143,7 @@ export default async function EducationPage() {
             transition={{ delay: 0.2 }}
             className="grid gap-4"
           >
-            {educations.length === 0 ? (
+            {languages.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -165,29 +151,29 @@ export default async function EducationPage() {
               >
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 to-pink-400/20 rounded-2xl blur opacity-30" />
                 <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-12 text-center">
-                  <GraduationCap className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <Globe className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                   <h3 className="text-xl font-semibold text-foreground mb-2">
-                    No education entries yet
+                    No languages added yet
                   </h3>
                   <p className="text-muted-foreground mb-6">
-                    Start by adding your educational background
+                    Start by adding your language skills
                   </p>
                   <Button
                     onClick={() => setIsFormOpen(true)}
                     className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white"
                   >
                     <Plus className="w-5 h-5 mr-2" />
-                    Add Your First Education
+                    Add Your First Language
                   </Button>
                 </div>
               </motion.div>
             ) : (
-              educations.map((education, index) => (
-                <EducationCard
-                  key={education.id}
-                  education={education}
-                  onEdit={() => handleEdit(education)}
-                  onDelete={() => handleDelete(education.id)}
+              languages.map((language, index) => (
+                <LanguageCard
+                  key={language.id}
+                  language={language}
+                  onEdit={() => handleEdit(language)}
+                  onDelete={() => handleDelete(language.id)}
                   index={index}
                 />
               ))

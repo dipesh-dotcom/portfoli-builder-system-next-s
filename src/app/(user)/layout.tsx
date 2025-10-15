@@ -1,5 +1,5 @@
 import { UserDashboardLayout } from "@/components/client/UserDashboardLayout";
-import React from "react";
+import React, { Suspense } from "react";
 
 export default function UserRootLayout({
   children,
