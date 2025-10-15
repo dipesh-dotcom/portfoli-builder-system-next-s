@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import NavbarWrapper from "@/components/NavbarWrapper";
+import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Client Dashboard",
@@ -41,6 +42,7 @@ export default function RootLayout({
           className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}
         >
           <NavbarWrapper />
+          {/* <Navbar /> */}
           <Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
           <Analytics />
         </body>

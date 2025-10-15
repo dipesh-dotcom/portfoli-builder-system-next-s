@@ -48,8 +48,8 @@ export function UserDashboardLayout({
   };
 
   const navItems = [
-    { name: "Dashboard", icon: LayoutDashboard, href: "/" },
-    { name: "Profile", icon: UserCircle, href: "/profile" },
+    { name: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+    // { name: "Profile", icon: UserCircle, href: "/profile" },
     { name: "Education", icon: GraduationCap, href: "/education" },
     { name: "Skill", icon: Lightbulb, href: "/skill" },
   ];
@@ -83,7 +83,7 @@ export function UserDashboardLayout({
                 : "-translate-x-full lg:translate-x-0"
             }
             fixed lg:static inset-y-0 left-0 z-50
-            w-64 border-r border-sidebar-border bg-sidebar flex flex-col relative
+            w-64 border-r border-sidebar-border bg-sidebar flex flex-col 
             transition-transform duration-300 ease-in-out
           `}
         >
@@ -205,7 +205,7 @@ export function UserDashboardLayout({
                 className="rounded-full hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all"
               >
                 <UserButton
-                  afterSignOutUrl="/" // where to redirect after logout
+                  // afterSignOutUrl="/" // where to redirect after logout
                   appearance={{
                     elements: {
                       userButtonAvatarBox: "h-5 w-5", // adjust avatar size
