@@ -1,5 +1,6 @@
 import { UserDashboardLayout } from "@/components/client/UserDashboardLayout";
 import React, { Suspense } from "react";
+import { Toaster } from "react-hot-toast";
 
 export default function UserRootLayout({
   children,
@@ -8,7 +9,9 @@ export default function UserRootLayout({
 }>) {
   return (
     <>
-      <UserDashboardLayout>{children}</UserDashboardLayout>
+      <UserDashboardLayout>
+        {children} <Toaster />
+      </UserDashboardLayout>
     </>
   );
 }

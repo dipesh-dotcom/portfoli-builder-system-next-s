@@ -9,6 +9,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import NavbarWrapper from "@/components/NavbarWrapper";
 import { Navbar } from "@/components/Navbar";
 import Loader from "./loading";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Client Dashboard",
@@ -48,6 +49,7 @@ export default function RootLayout({
           <Analytics />
         </body>
       </html>
+      <Toaster />
     </ClerkProvider>
   );
 }

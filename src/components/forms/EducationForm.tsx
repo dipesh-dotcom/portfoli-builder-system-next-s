@@ -26,18 +26,16 @@ import { GraduationCap, Building2, Calendar, Save, X } from "lucide-react";
 
 const educationFormSchema = z
   .object({
-    institute_name: z
-      .string()
-      .min(2, "Institute must be at least 2 characters"),
+    instituteName: z.string().min(2, "Institute must be at least 2 characters"),
     degree: z.string().min(2, "Degree is required"),
-    start_year: z
+    startYear: z
       .string()
       .regex(/^\d{4}$/, "Must be a valid year")
       .refine((year) => {
         const y = Number.parseInt(year);
         return y >= 1950 && y <= new Date().getFullYear() + 10;
       }, "Year must be between 1950 and 10 years from now"),
-    end_year: z
+    endYear: z
       .string()
       .regex(/^\d{4}$/, "Must be a valid year")
       .refine((year) => {
@@ -46,11 +44,10 @@ const educationFormSchema = z
       }, "Year must be between 1950 and 10 years from now"),
   })
   .refine(
-    (date) =>
-      Number.parseInt(date.end_year) >= Number.parseInt(date.start_year),
+    (date) => Number.parseInt(date.endYear) >= Number.parseInt(date.startYear),
     {
       message: "End year must be after or equal to start year",
-      path: ["end_year"],
+      path: ["endYear"],
     }
   );
 
@@ -74,10 +71,10 @@ export function EducationForm({
   const form = useForm<EducationFormValues>({
     resolver: zodResolver(educationFormSchema),
     defaultValues: {
-      institute_name: initialData?.institute_name || "",
+      instituteName: initialData?.instituteName || "",
       degree: initialData?.degree || "",
-      start_year: initialData?.start_year || "",
-      end_year: initialData?.end_year || "",
+      startYear: initialData?.startYear || "",
+      endYear: initialData?.endYear || "",
     },
   });
 
@@ -141,7 +138,7 @@ export function EducationForm({
             >
               <FormField
                 control={form.control}
-                name="institute_name"
+                name="instituteName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground flex items-center gap-2">
@@ -194,7 +191,7 @@ export function EducationForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="start_year"
+                  name="startYear"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-foreground flex items-center gap-2">
@@ -218,7 +215,7 @@ export function EducationForm({
 
                 <FormField
                   control={form.control}
-                  name="end_year"
+                  name="endYear"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-foreground flex items-center gap-2">

@@ -1,84 +1,134 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/ThreeBackground";
 import { EducationForm } from "@/components/forms/EducationForm";
 import { EducationCard } from "@/components/cards/EducationCard";
 import { Button } from "@/components/ui/button";
 import { Plus, GraduationCap } from "lucide-react";
+import {
+  createEducation,
+  updateEducation,
+  deleteEducation,
+  getEducations,
+} from "@/actions/education";
 
 type EducationEntry = {
   id: string;
-  user_id: string;
-  institute_name: string;
+  userId: string;
+  instituteName: string;
   degree: string;
-  start_year: string;
-  end_year: string;
-  created_at: string;
-  updated_at: string;
+  startYear: string;
+  endYear: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
-export default async function EducationPage() {
-  const [educations, setEducations] = useState<EducationEntry[]>([
-    {
-      id: "1",
-      user_id: "user_1",
-      institute_name: "Stanford University",
-      degree: "Master's Degree",
-      start_year: "2020",
-      end_year: "2022",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "2",
-      user_id: "user_1",
-      institute_name: "MIT",
-      degree: "Bachelor's Degree",
-      start_year: "2016",
-      end_year: "2020",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ]);
-
+export default function EducationPage({
+  initialEducations,
+}: {
+  initialEducations: EducationEntry[];
+}) {
+  const [educations, setEducations] = useState<EducationEntry[]>(
+    initialEducations || []
+  );
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] =
     useState<EducationEntry | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  const handleSubmit = (data: {
-    institute_name: string;
+  // Fetch education data from server on component mount
+  useEffect(() => {
+    const fetchEducations = async () => {
+      try {
+        const data: any = await getEducations();
+        if (data.success) {
+          setEducations(data.data);
+        } else {
+          toast.error(data.error || "Failed to fetch education entries");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong while fetching educations");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEducations();
+  }, []);
+
+  const handleSubmit = async (data: {
+    instituteName: string;
     degree: string;
-    start_year: string;
-    end_year: string;
+    startYear: string;
+    endYear: string;
   }) => {
-    if (editingEducation) {
-      // Update existing education
-      setEducations(
-        educations.map((edu) =>
-          edu.id === editingEducation.id
-            ? { ...edu, ...data, updated_at: new Date().toISOString() }
-            : edu
-        )
-      );
-    } else {
-      // Add new education
-      const newEducation: EducationEntry = {
-        id: Date.now().toString(),
-        user_id: "user_1",
-        ...data,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      setEducations([newEducation, ...educations]);
+    try {
+      let res: any;
+      if (editingEducation) {
+        res = await updateEducation(editingEducation.id, {
+          ...data,
+          startYear: Number(data.startYear),
+          endYear: Number(data.endYear),
+        });
+        if (res.success) {
+          setEducations((prev) =>
+            prev.map((edu) => (edu.id === editingEducation.id ? res.data : edu))
+          );
+          setHighlightedId(editingEducation.id);
+          toast.success("Education updated successfully");
+        } else {
+          toast.error(res.error);
+        }
+      } else {
+        res = await createEducation({
+          ...data,
+          startYear: Number(data.startYear),
+          endYear: Number(data.endYear),
+        });
+        if (res.success) {
+          setEducations((prev) => [res.data, ...prev]);
+          setHighlightedId(res.data.id);
+          toast.success("Education added successfully");
+        } else {
+          toast.error(res.error);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setIsFormOpen(false);
+      setEditingEducation(null);
+      setTimeout(() => setHighlightedId(null), 3000);
     }
-    setIsFormOpen(false);
-    setEditingEducation(null);
   };
 
-  const handleDelete = (id: string) => {
-    setEducations(educations.filter((edu) => edu.id !== id));
+  const handleDelete = async (id: string) => {
+    setDeletingIds((prev) => new Set(prev).add(id));
+    try {
+      const res: any = await deleteEducation(id);
+      if (res.success) {
+        setEducations((prev) => prev.filter((edu) => edu.id !== id));
+        toast.success("Education deleted successfully");
+      } else {
+        toast.error(res.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setDeletingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
   };
 
   const handleEdit = (education: EducationEntry) => {
@@ -95,6 +145,7 @@ export default async function EducationPage() {
     <>
       <ThreeBackground />
       <div className="space-y-6">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -111,6 +162,7 @@ export default async function EducationPage() {
               Manage your educational background and qualifications
             </p>
           </div>
+
           {!isFormOpen && (
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
@@ -124,6 +176,7 @@ export default async function EducationPage() {
           )}
         </motion.div>
 
+        {/* Form */}
         <AnimatePresence mode="wait">
           {isFormOpen && (
             <motion.div
@@ -138,10 +191,10 @@ export default async function EducationPage() {
                 initialData={
                   editingEducation
                     ? {
-                        institute_name: editingEducation.institute_name,
+                        instituteName: editingEducation.instituteName,
                         degree: editingEducation.degree,
-                        start_year: editingEducation.start_year,
-                        end_year: editingEducation.end_year,
+                        startYear: editingEducation.startYear,
+                        endYear: editingEducation.endYear,
                       }
                     : undefined
                 }
@@ -150,6 +203,7 @@ export default async function EducationPage() {
           )}
         </AnimatePresence>
 
+        {/* Cards */}
         {!isFormOpen && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -157,7 +211,11 @@ export default async function EducationPage() {
             transition={{ delay: 0.2 }}
             className="grid gap-4"
           >
-            {educations.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : educations.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -185,10 +243,18 @@ export default async function EducationPage() {
               educations.map((education, index) => (
                 <EducationCard
                   key={education.id}
-                  education={education}
+                  education={{
+                    id: education.id,
+                    instituteName: education.instituteName,
+                    degree: education.degree,
+                    startYear: education.startYear,
+                    endYear: education.endYear,
+                  }}
                   onEdit={() => handleEdit(education)}
                   onDelete={() => handleDelete(education.id)}
                   index={index}
+                  highlight={highlightedId === education.id}
+                  loading={deletingIds.has(education.id)}
                 />
               ))
             )}

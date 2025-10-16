@@ -21,13 +21,38 @@ enum Role {
 }
 
 model User {
-  id        String   @id @default(uuid()) @db.Uuid
-  clerkId   String   @unique
-  name      String?
-  email     String?  @unique
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(uuid()) @db.Uuid
+  clerkId    String      @unique
+  name       String?
+  email      String?     @unique
+  role       Role        @default(USER)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  educations Education[]
+  // experiences Experience[]
 
   @@map("users")
 }
+
+model Education {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid // ✅ FIXED: make it match User.id type
+  instituteName String
+  degree        String
+  startYear     Int
+  endYear       Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("educations")
+}
+
+// model Experience {
+//   id     String @id @default(uuid()) @db.Uuid
+//   userId String @db.Uuid
+
+//   User User @relation(fields: [userId], references: [id])
+// }
