@@ -31,6 +31,8 @@ model User {
   educations   Education[]
   experiences  Experience[]
   achievements Achievement[]
+  skills       Skill[]
+  languages    Language[]
 
   @@map("users")
 }
@@ -62,7 +64,7 @@ model Experience {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  User User @relation(fields: [userId], references: [id])
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("experiences")
@@ -73,12 +75,37 @@ model Achievement {
   userId       String   @db.Uuid
   title        String
   issuer       String
-  dateObtained DateTime
+  dateObtained String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  User User @relation(fields: [userId], references: [id])
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("achievements")
+}
+
+model Skill {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  skillName String
+  rating    Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("skills")
+}
+
+model Language {
+  id          String @id @default(uuid()) @db.Uuid
+  userId      String @db.Uuid
+  name        String
+  proficiency String
+  User        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("languages")
 }

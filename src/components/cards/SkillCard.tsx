@@ -1,20 +1,22 @@
 "use client";
 
 import type React from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Star, Edit, Trash2, Sparkles } from "lucide-react";
+import { Star, Edit, Trash2, Sparkles, Loader2 } from "lucide-react";
 
 type SkillCardProps = {
   skill: {
     id: string;
-    skill_name: string;
+    skillName: string;
     rating: number; // 1 to 5
   };
   onEdit: () => void;
   onDelete: () => void;
   index?: number;
+  highlight?: boolean; // NEW: highlight prop
+  loading?: boolean;
 };
 
 export function SkillCard({
@@ -22,9 +24,12 @@ export function SkillCard({
   onEdit,
   onDelete,
   index = 0,
+  highlight = false,
+  loading = false,
 }: SkillCardProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isHighlighted, setIsHighlighted] = useState(highlight);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -41,6 +46,18 @@ export function SkillCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      <AnimatePresence>
+        {isHighlighted && (
+          <motion.div
+            className="absolute inset-0 rounded-xl z-0 pointer-events-none"
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 3, ease: "easeOut" }}
+            style={{ backgroundColor: "rgba(255, 245, 157, 0.4)" }} // soft yellow highlight
+          />
+        )}
+      </AnimatePresence>
       {/* Gradient border */}
       <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-pink-400 to-indigo-500 rounded-xl blur opacity-0 group-hover:opacity-60 transition duration-700 animate-gradient-xy" />
 
@@ -78,7 +95,7 @@ export function SkillCard({
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                      {skill.skill_name}
+                      {skill.skillName}
                     </h3>
                     <motion.div
                       initial={{ opacity: 0, scale: 0 }}
@@ -151,7 +168,11 @@ export function SkillCard({
                   className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-all duration-300 relative overflow-hidden group/btn"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-destructive/0 via-destructive/20 to-destructive/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
-                  <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                  {loading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-destructive" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                  )}
                 </Button>
               </motion.div>
             </div>

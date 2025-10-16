@@ -1,70 +1,123 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/ThreeBackground";
 import { SkillForm } from "@/components/forms/SkillForm";
 import { SkillCard } from "@/components/cards/SkillCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Star } from "lucide-react";
+import {
+  createSkill,
+  updateSkill,
+  deleteSkill,
+  getSkills,
+} from "@/actions/skill";
 
 type SkillEntry = {
   id: string;
   user_id: string;
-  skill_name: string;
+  skillName: string;
   rating: number;
   created_at: string;
   updated_at: string;
 };
 
-export default async function SkillPage() {
-  const [skills, setSkills] = useState<SkillEntry[]>([
-    {
-      id: "1",
-      user_id: "user_1",
-      skill_name: "React",
-      rating: 5,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "2",
-      user_id: "user_1",
-      skill_name: "Python",
-      rating: 4,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ]);
+export default function SkillPage({
+  initialSkills,
+}: {
+  initialSkills: SkillEntry[];
+}) {
+  const [skills, setSkills] = useState<SkillEntry[]>(initialSkills || []);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<SkillEntry | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  const handleSubmit = (data: { skill_name: string; rating: number }) => {
-    if (editingSkill) {
-      setSkills(
-        skills.map((skill) =>
-          skill.id === editingSkill.id
-            ? { ...skill, ...data, updated_at: new Date().toISOString() }
-            : skill
-        )
-      );
-    } else {
-      const newSkill: SkillEntry = {
-        id: Date.now().toString(),
-        user_id: "user_1",
-        ...data,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      setSkills([newSkill, ...skills]);
+  // Fetch education data from server on component mount
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const data: any = await getSkills();
+        if (data.success) {
+          setSkills(data.data);
+        } else {
+          toast.error(data.error || "Failed to fetch skill entries");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong while fetching skills");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSkills();
+  }, []);
+
+  const handleSubmit = async (data: { skillName: string; rating: number }) => {
+    try {
+      let res: any;
+      if (editingSkill) {
+        res = await updateSkill(editingSkill.id, {
+          ...data,
+        });
+        if (res.success) {
+          setSkills((prev) =>
+            prev.map((skill) =>
+              skill.id === editingSkill.id ? res.data : skill
+            )
+          );
+          setHighlightedId(editingSkill.id);
+          toast.success("Skill updated successfully");
+        } else {
+          toast.error(res.error);
+        }
+      } else {
+        res = await createSkill({
+          ...data,
+        });
+        if (res.success) {
+          setSkills((prev) => [res.data, ...prev]);
+          setHighlightedId(res.data.id);
+          toast.success("Skill added successfully");
+        } else {
+          toast.error(res.error);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setIsFormOpen(false);
+      setEditingSkill(null);
+      setTimeout(() => setHighlightedId(null), 3000);
     }
-    setIsFormOpen(false);
-    setEditingSkill(null);
   };
 
-  const handleDelete = (id: string) => {
-    setSkills(skills.filter((skill) => skill.id !== id));
+  const handleDelete = async (id: string) => {
+    setDeletingIds((prev) => new Set(prev).add(id));
+    try {
+      const res: any = await deleteSkill(id);
+      if (res.success) {
+        setSkills((prev) => prev.filter((skill) => skill.id !== id));
+        toast.success("Skill deleted successfully");
+      } else {
+        toast.error(res.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setDeletingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
   };
 
   const handleEdit = (skill: SkillEntry) => {
@@ -124,7 +177,7 @@ export default async function SkillPage() {
                 initialData={
                   editingSkill
                     ? {
-                        skill_name: editingSkill.skill_name,
+                        skillName: editingSkill.skillName,
                         rating: editingSkill.rating,
                       }
                     : undefined
@@ -141,7 +194,11 @@ export default async function SkillPage() {
             transition={{ delay: 0.2 }}
             className="grid gap-4"
           >
-            {skills.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : skills.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -173,6 +230,8 @@ export default async function SkillPage() {
                   onEdit={() => handleEdit(skill)}
                   onDelete={() => handleDelete(skill.id)}
                   index={index}
+                  highlight={highlightedId === skill.id}
+                  loading={deletingIds.has(skill.id)}
                 />
               ))
             )}

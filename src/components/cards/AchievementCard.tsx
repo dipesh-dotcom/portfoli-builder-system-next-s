@@ -1,8 +1,8 @@
 "use client";
 
 import type React from "react";
-import { motion } from "framer-motion";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Calendar,
@@ -11,6 +11,7 @@ import {
   Sparkles,
   Trophy,
   Building2,
+  Loader2,
 } from "lucide-react";
 
 type AchievementCardProps = {
@@ -18,11 +19,13 @@ type AchievementCardProps = {
     id: string;
     title: string;
     issuer: string;
-    date_obtained: string;
+    dateObtained: string;
   };
   onEdit: () => void;
   onDelete: () => void;
   index?: number;
+  highlight?: boolean; // NEW: highlight prop
+  loading?: boolean;
 };
 
 export function AchievementCard({
@@ -30,9 +33,20 @@ export function AchievementCard({
   onEdit,
   onDelete,
   index = 0,
+  highlight = false,
+  loading = false,
 }: AchievementCardProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isHighlighted, setIsHighlighted] = useState(highlight);
+
+  useEffect(() => {
+    if (highlight) {
+      setIsHighlighted(true);
+      const timer = setTimeout(() => setIsHighlighted(false), 3000); // highlight for 3s
+      return () => clearTimeout(timer);
+    }
+  }, [highlight]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -52,6 +66,20 @@ export function AchievementCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Highlight animation */}
+      <AnimatePresence>
+        {isHighlighted && (
+          <motion.div
+            className="absolute inset-0 rounded-xl z-0 pointer-events-none"
+            initial={{ opacity: 0.8 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 3, ease: "easeOut" }}
+            style={{ backgroundColor: "rgba(255, 245, 157, 0.4)" }} // soft yellow highlight
+          />
+        )}
+      </AnimatePresence>
+
       <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-pink-400 to-indigo-500 rounded-xl blur opacity-0 group-hover:opacity-60 transition duration-700 animate-gradient-xy" />
 
       {isHovered && (
@@ -105,7 +133,7 @@ export function AchievementCard({
               <div className="space-y-1.5 pl-8">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>{achievement.date_obtained}</span>
+                  <span>{achievement.dateObtained}</span>
                 </div>
 
                 <div className="w-full h-0.5 bg-border rounded-full overflow-hidden">
@@ -150,7 +178,11 @@ export function AchievementCard({
                   className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-all duration-300 relative overflow-hidden group/btn"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-destructive/0 via-destructive/20 to-destructive/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
-                  <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                  {loading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-destructive" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                  )}
                 </Button>
               </motion.div>
             </div>

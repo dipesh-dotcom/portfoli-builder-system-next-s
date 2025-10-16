@@ -27,7 +27,7 @@ import {
 const achievementFormSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
   issuer: z.string().min(2, "Issuer must be at least 2 characters"),
-  date_obtained: z
+  dateObtained: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Must be a valid date (YYYY-MM-DD)"),
 });
@@ -54,7 +54,7 @@ export function AchievementForm({
     defaultValues: {
       title: initialData?.title || "",
       issuer: initialData?.issuer || "",
-      date_obtained: initialData?.date_obtained || "",
+      dateObtained: initialData?.dateObtained || "",
     },
   });
 
@@ -152,7 +152,7 @@ export function AchievementForm({
               {/* Date Obtained */}
               <FormField
                 control={form.control}
-                name="date_obtained"
+                name="dateObtained"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground flex items-center gap-2">

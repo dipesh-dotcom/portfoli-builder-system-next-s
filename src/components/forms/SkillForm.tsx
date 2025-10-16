@@ -18,7 +18,7 @@ import {
 import { Star, Save, X } from "lucide-react";
 
 const skillFormSchema = z.object({
-  skill_name: z.string().min(2, "Skill must be at least 2 characters"),
+  skillName: z.string().min(2, "Skill must be at least 2 characters"),
   rating: z
     .number()
     .min(1, "Minimum rating is 1")
@@ -45,7 +45,7 @@ export function SkillForm({
   const form = useForm<SkillFormValues>({
     resolver: zodResolver(skillFormSchema),
     defaultValues: {
-      skill_name: initialData?.skill_name || "",
+      skillName: initialData?.skillName || "",
       rating: initialData?.rating || 1,
     },
   });
@@ -99,7 +99,7 @@ export function SkillForm({
             >
               <FormField
                 control={form.control}
-                name="skill_name"
+                name="skillName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground flex items-center gap-2">
@@ -133,8 +133,11 @@ export function SkillForm({
                         placeholder="5"
                         min={1}
                         max={5}
+                        step={0.1}
                         className="bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 transition-all"
                         {...field}
+                        value={field.value} // keep value synced
+                        onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     </FormControl>
                     <FormMessage />

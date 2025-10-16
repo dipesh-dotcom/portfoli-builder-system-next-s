@@ -1,80 +1,137 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/ThreeBackground";
 import { AchievementForm } from "@/components/forms/AchievementForm";
 import { AchievementCard } from "@/components/cards/AchievementCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Trophy } from "lucide-react";
+import {
+  createAchievement,
+  updateAchievement,
+  deleteAchievement,
+  getAchievements,
+} from "@/actions/achievement";
 
 type AchievementEntry = {
   id: string;
   user_id: string;
   title: string;
   issuer: string;
-  date_obtained: string;
+  dateObtained: string;
   created_at: string;
   updated_at: string;
 };
 
-export default async function AchievementPage() {
-  const [achievements, setAchievements] = useState<AchievementEntry[]>([
-    {
-      id: "1",
-      user_id: "user_1",
-      title: "Best Student Award",
-      issuer: "Stanford University",
-      date_obtained: "2022-05-15",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "2",
-      user_id: "user_1",
-      title: "Research Excellence",
-      issuer: "MIT",
-      date_obtained: "2020-08-20",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ]);
+export default function AchievementPage({
+  initialAchievements,
+}: {
+  initialAchievements: AchievementEntry[];
+}) {
+  const [achievements, setAchievements] = useState<AchievementEntry[]>(
+    initialAchievements || []
+  );
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAchievement, setEditingAchievement] =
     useState<AchievementEntry | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  const handleSubmit = (data: {
-    title: string;
-    issuer: string;
-    date_obtained: string;
-  }) => {
-    if (editingAchievement) {
-      // Update existing achievement
-      setAchievements(
-        achievements.map((ach) =>
-          ach.id === editingAchievement.id
-            ? { ...ach, ...data, updated_at: new Date().toISOString() }
-            : ach
-        )
-      );
-    } else {
-      // Add new achievement
-      const newAchievement: AchievementEntry = {
-        id: Date.now().toString(),
-        user_id: "user_1",
-        ...data,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      setAchievements([newAchievement, ...achievements]);
-    }
-    setIsFormOpen(false);
-    setEditingAchievement(null);
+  // Fetch education data from server on component mount
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      try {
+        const data: any = await getAchievements();
+        if (data.success) {
+          setAchievements(data.data);
+        } else {
+          toast.error(data.error || "Failed to fetch achievements entries");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong while fetching achievements");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAchievements();
+  }, []);
+
+  const parseDateOnly = (dateString: string): Date => {
+    return new Date(dateString + "T00:00:00Z");
   };
 
-  const handleDelete = (id: string) => {
-    setAchievements(achievements.filter((ach) => ach.id !== id));
+  const handleSubmit = async (data: {
+    title: string;
+    issuer: string;
+    dateObtained: string;
+  }) => {
+    try {
+      let res: any;
+      if (editingAchievement) {
+        res = await updateAchievement(editingAchievement.id, {
+          ...data,
+          dateObtained: new Date().toISOString().split("T")[0],
+        });
+        if (res.success) {
+          setAchievements((prev) =>
+            prev.map((ach) =>
+              ach.id === editingAchievement.id ? res.data : ach
+            )
+          );
+          setHighlightedId(editingAchievement.id);
+          toast.success("Achievement updated successfully");
+        } else {
+          toast.error(res.error);
+        }
+      } else {
+        res = await createAchievement({
+          ...data,
+          dateObtained: new Date().toISOString().split("T")[0],
+        });
+        if (res.success) {
+          setAchievements((prev) => [res.data, ...prev]);
+          setHighlightedId(res.data.id);
+          toast.success("Achievement added successfully");
+        } else {
+          toast.error(res.error);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setIsFormOpen(false);
+      setEditingAchievement(null);
+      setTimeout(() => setHighlightedId(null), 3000);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setDeletingIds((prev) => new Set(prev).add(id));
+    try {
+      const res: any = await deleteAchievement(id);
+      if (res.success) {
+        setAchievements((prev) => prev.filter((ach) => ach.id !== id));
+        toast.success("Achievement deleted successfully");
+      } else {
+        toast.error(res.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setDeletingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
   };
 
   const handleEdit = (achievement: AchievementEntry) => {
@@ -107,6 +164,7 @@ export default async function AchievementPage() {
               Manage your achievements and awards
             </p>
           </div>
+
           {!isFormOpen && (
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
@@ -136,7 +194,7 @@ export default async function AchievementPage() {
                     ? {
                         title: editingAchievement.title,
                         issuer: editingAchievement.issuer,
-                        date_obtained: editingAchievement.date_obtained,
+                        dateObtained: editingAchievement.dateObtained,
                       }
                     : undefined
                 }
@@ -152,7 +210,11 @@ export default async function AchievementPage() {
             transition={{ delay: 0.2 }}
             className="grid gap-4"
           >
-            {achievements.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : achievements.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -184,6 +246,8 @@ export default async function AchievementPage() {
                   onEdit={() => handleEdit(achievement)}
                   onDelete={() => handleDelete(achievement.id)}
                   index={index}
+                  highlight={highlightedId === achievement.id}
+                  loading={deletingIds.has(achievement.id)}
                 />
               ))
             )}

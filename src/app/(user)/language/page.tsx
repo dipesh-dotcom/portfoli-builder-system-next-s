@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/ThreeBackground";
 import { LanguageForm } from "@/components/forms/LanguageForm";
 import { LanguageCard } from "@/components/cards/LanguageCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Globe } from "lucide-react";
+import {
+  createLanguage,
+  updateLangugae,
+  deleteLanguage,
+  getLanguages,
+} from "@/actions/language";
 
 type LanguageEntry = {
   id: string;
@@ -17,56 +24,104 @@ type LanguageEntry = {
   updated_at: string;
 };
 
-export default async function LanguagePage() {
-  const [languages, setLanguages] = useState<LanguageEntry[]>([
-    {
-      id: "1",
-      user_id: "user_1",
-      name: "English",
-      proficiency: "Native",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: "2",
-      user_id: "user_1",
-      name: "Spanish",
-      proficiency: "Intermediate",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ]);
+export default function LanguagePage({
+  initialLanguages,
+}: {
+  initialLanguages: LanguageEntry[];
+}) {
+  const [languages, setLanguages] = useState<LanguageEntry[]>(
+    initialLanguages || ""
+  );
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<LanguageEntry | null>(
     null
   );
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  const handleSubmit = (data: { name: string; proficiency: string }) => {
-    if (editingLanguage) {
-      setLanguages(
-        languages.map((lang) =>
-          lang.id === editingLanguage.id
-            ? { ...lang, ...data, updated_at: new Date().toISOString() }
-            : lang
-        )
-      );
-    } else {
-      const newLanguage: LanguageEntry = {
-        id: Date.now().toString(),
-        user_id: "user_1",
-        ...data,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-      setLanguages([newLanguage, ...languages]);
+  // Fetch language data from server on component mount
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const data: any = await getLanguages();
+        if (data.success) {
+          setLanguages(data.data);
+        } else {
+          toast.error(data.error || "Failed to fetch language entries");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong while fetching languages");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLanguages();
+  }, []);
+
+  const handleSubmit = async (data: { name: string; proficiency: string }) => {
+    try {
+      let res: any;
+      if (editingLanguage) {
+        res = await updateLangugae(editingLanguage.id, {
+          ...data,
+        });
+        if (res.success) {
+          setLanguages((prev) =>
+            prev.map((lang) =>
+              lang.id === editingLanguage.id ? res.data : lang
+            )
+          );
+          setHighlightedId(editingLanguage.id);
+          toast.success("Language updated successfully");
+        } else {
+          toast.error(res.error);
+        }
+      } else {
+        res = await createLanguage({
+          ...data,
+        });
+        if (res.success) {
+          setLanguages((prev) => [res.data, ...prev]);
+          setHighlightedId(res.data.id);
+          toast.success("Language added successfully");
+        } else {
+          toast.error(res.error);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setIsFormOpen(false);
+      setEditingLanguage(null);
+      setTimeout(() => setHighlightedId(null), 3000);
     }
-    setIsFormOpen(false);
-    setEditingLanguage(null);
   };
 
-  const handleDelete = (id: string) => {
-    setLanguages(languages.filter((lang) => lang.id !== id));
+  const handleDelete = async (id: string) => {
+    setDeletingIds((prev) => new Set(prev).add(id));
+    try {
+      const res: any = await deleteLanguage(id);
+      if (res.success) {
+        setLanguages((prev) => prev.filter((lang) => lang.id !== id));
+        toast.success("Language deleted successfully");
+      } else {
+        toast.error(res.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setDeletingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
   };
 
   const handleEdit = (language: LanguageEntry) => {
@@ -127,7 +182,26 @@ export default async function LanguagePage() {
                   editingLanguage
                     ? {
                         name: editingLanguage.name,
-                        proficiency: editingLanguage.proficiency,
+                        ...((
+                          [
+                            "Beginner",
+                            "Elementary",
+                            "Intermediate",
+                            "Advanced",
+                            "Fluent",
+                            "Native",
+                          ] as const
+                        ).includes(editingLanguage.proficiency as any)
+                          ? {
+                              proficiency: editingLanguage.proficiency as
+                                | "Beginner"
+                                | "Elementary"
+                                | "Intermediate"
+                                | "Advanced"
+                                | "Fluent"
+                                | "Native",
+                            }
+                          : {}),
                       }
                     : undefined
                 }
@@ -143,7 +217,11 @@ export default async function LanguagePage() {
             transition={{ delay: 0.2 }}
             className="grid gap-4"
           >
-            {languages.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : languages.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -175,6 +253,8 @@ export default async function LanguagePage() {
                   onEdit={() => handleEdit(language)}
                   onDelete={() => handleDelete(language.id)}
                   index={index}
+                  highlight={highlightedId === language.id}
+                  loading={deletingIds.has(language.id)}
                 />
               ))
             )}

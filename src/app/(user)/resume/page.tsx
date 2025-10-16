@@ -13,7 +13,7 @@ type Resume = {
   created_at: string;
 };
 
-export default async function ResumePage() {
+export default function ResumePage() {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [editingResume, setEditingResume] = useState<Resume | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);

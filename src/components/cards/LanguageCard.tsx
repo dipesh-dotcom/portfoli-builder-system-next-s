@@ -1,10 +1,17 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Globe } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Globe,
+  Loader2,
+  Sparkles,
+  GraduationCap,
+} from "lucide-react";
 
 type LanguageCardProps = {
   language: {
@@ -15,6 +22,8 @@ type LanguageCardProps = {
   onEdit: () => void;
   onDelete: () => void;
   index?: number;
+  highlight?: boolean;
+  loading?: boolean;
 };
 
 export function LanguageCard({
@@ -22,9 +31,20 @@ export function LanguageCard({
   onEdit,
   onDelete,
   index = 0,
+  highlight = false,
+  loading = false,
 }: LanguageCardProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isHighlighted, setIsHighlighted] = useState(highlight);
+
+  useEffect(() => {
+    if (highlight) {
+      setIsHighlighted(true);
+      const timer = setTimeout(() => setIsHighlighted(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlight]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -55,7 +75,11 @@ export function LanguageCard({
       )}
 
       {/* Card Container */}
-      <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20">
+      <div
+        className={`relative bg-card/95 backdrop-blur-xl border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 ${
+          isHighlighted ? "ring-2 ring-indigo-400" : ""
+        }`}
+      >
         {/* Animated Gradient Overlay */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
           <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
@@ -77,17 +101,29 @@ export function LanguageCard({
 
               {/* Name & Proficiency */}
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                  {language.name}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {language.proficiency}
-                </p>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+                    {language.name}
+                  </h3>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 + 0.3 }}
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </motion.div>
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <GraduationCap className="w-3.5 h-3.5 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">
+                    {language.proficiency}
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Progress Bar */}
-            <div className="w-full h-1 bg-border rounded-full overflow-hidden mt-2">
+            <div className="w-full h-0.5 bg-border rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-gradient-to-r from-indigo-500 to-pink-400"
                 initial={{ width: 0 }}
@@ -131,7 +167,11 @@ export function LanguageCard({
                 className="h-8 w-8 relative overflow-hidden group"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-destructive/0 via-destructive/20 to-destructive/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                {loading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-destructive" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                )}
               </Button>
             </motion.div>
           </div>

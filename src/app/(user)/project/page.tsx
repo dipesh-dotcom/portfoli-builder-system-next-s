@@ -20,7 +20,7 @@ type ProjectEntry = {
   updated_at: string;
 };
 
-export default async function ProjectPage() {
+export default function ProjectPage() {
   const [projects, setProjects] = useState<ProjectEntry[]>([
     {
       id: "1",

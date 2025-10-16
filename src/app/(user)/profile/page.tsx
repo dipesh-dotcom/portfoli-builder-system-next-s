@@ -29,7 +29,7 @@ type UserProfile = {
   avatar_url: string;
 };
 
-export default async function ProfilePage() {
+export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile>({
     id: "user_1",
     name: "John Doe",
