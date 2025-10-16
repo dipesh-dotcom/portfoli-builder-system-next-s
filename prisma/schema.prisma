@@ -21,15 +21,16 @@ enum Role {
 }
 
 model User {
-  id         String      @id @default(uuid()) @db.Uuid
-  clerkId    String      @unique
-  name       String?
-  email      String?     @unique
-  role       Role        @default(USER)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  educations Education[]
-  // experiences Experience[]
+  id           String        @id @default(uuid()) @db.Uuid
+  clerkId      String        @unique
+  name         String?
+  email        String?       @unique
+  role         Role          @default(USER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  educations   Education[]
+  experiences  Experience[]
+  achievements Achievement[]
 
   @@map("users")
 }
@@ -50,9 +51,34 @@ model Education {
   @@map("educations")
 }
 
-// model Experience {
-//   id     String @id @default(uuid()) @db.Uuid
-//   userId String @db.Uuid
+model Experience {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  companyName String
+  position    String
+  startYear   Int
+  endYear     Int?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-//   User User @relation(fields: [userId], references: [id])
-// }
+  User User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("experiences")
+}
+
+model Achievement {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  title        String
+  issuer       String
+  dateObtained DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("achievements")
+}

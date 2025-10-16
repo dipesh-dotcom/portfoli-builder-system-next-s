@@ -18,37 +18,33 @@ import {
 } from "@/components/ui/form";
 import { Building2, Briefcase, Calendar, Save, X } from "lucide-react";
 
-// ✅ Schema validation
+// ✅ Zod schema for validation
 const experienceFormSchema = z
   .object({
-    company_name: z
+    companyName: z
       .string()
       .min(2, "Company name must be at least 2 characters"),
     position: z.string().min(2, "Position title is required"),
-    start_year: z
+    startYear: z
       .string()
       .regex(/^\d{4}$/, "Must be a valid year")
       .refine((year) => {
-        const y = Number.parseInt(year);
+        const y = Number(year);
         return y >= 1950 && y <= new Date().getFullYear() + 10;
       }, "Year must be between 1950 and 10 years from now"),
-    end_year: z
+    endYear: z
       .string()
       .regex(/^\d{4}$/, "Must be a valid year")
       .refine((year) => {
-        const y = Number.parseInt(year);
+        const y = Number(year);
         return y >= 1950 && y <= new Date().getFullYear() + 10;
       }, "Year must be between 1950 and 10 years from now"),
     description: z.string().optional(),
   })
-  .refine(
-    (data) =>
-      Number.parseInt(data.end_year) >= Number.parseInt(data.start_year),
-    {
-      message: "End year must be after or equal to start year",
-      path: ["end_year"],
-    }
-  );
+  .refine((data) => Number(data.endYear) >= Number(data.startYear), {
+    message: "End year must be after or equal to start year",
+    path: ["endYear"],
+  });
 
 type ExperienceFormValues = z.infer<typeof experienceFormSchema>;
 
@@ -70,10 +66,10 @@ export function ExperienceForm({
   const form = useForm<ExperienceFormValues>({
     resolver: zodResolver(experienceFormSchema),
     defaultValues: {
-      company_name: initialData?.company_name || "",
+      companyName: initialData?.companyName || "",
       position: initialData?.position || "",
-      start_year: initialData?.start_year || "",
-      end_year: initialData?.end_year || "",
+      startYear: initialData?.startYear || "",
+      endYear: initialData?.endYear || "",
       description: initialData?.description || "",
     },
   });
@@ -131,7 +127,7 @@ export function ExperienceForm({
               {/* Company Name */}
               <FormField
                 control={form.control}
-                name="company_name"
+                name="companyName"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-foreground flex items-center gap-2">
@@ -176,7 +172,7 @@ export function ExperienceForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="start_year"
+                  name="startYear"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-foreground flex items-center gap-2">
@@ -200,7 +196,7 @@ export function ExperienceForm({
 
                 <FormField
                   control={form.control}
-                  name="end_year"
+                  name="endYear"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-foreground flex items-center gap-2">

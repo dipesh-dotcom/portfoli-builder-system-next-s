@@ -1,90 +1,147 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/ThreeBackground";
 import { ExperienceForm } from "@/components/forms/ExperienceForm";
 import { ExperienceCard } from "@/components/cards/ExperienceCard";
 import { Button } from "@/components/ui/button";
 import { Plus, Briefcase } from "lucide-react";
+import {
+  createExperience,
+  updateExperience,
+  deleteExperience,
+  getExperiences,
+} from "@/actions/experience";
 
-// Define experience type
 type ExperienceEntry = {
   id: string;
-  user_id: string;
-  company_name: string;
+  userId: string;
+  companyName: string;
   position: string;
-  start_date: string; // backend expects full date
-  end_date: string;
+  startYear: string;
+  endYear: string;
   description: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
-// Form data type
-type ExperienceFormData = {
-  company_name: string;
-  position: string;
-  start_date: string;
-  end_date: string;
-  description?: string;
-};
-
-export default function ExperiencePage() {
-  const [experiences, setExperiences] = useState<ExperienceEntry[]>([
-    {
-      id: "1",
-      user_id: "user_1",
-      company_name: "Google",
-      position: "Frontend Developer",
-      start_date: "2021-01-01",
-      end_date: "2023-03-01",
-      description:
-        "Worked on UI components and dashboards using React, TypeScript, and Tailwind CSS.",
-    },
-    {
-      id: "2",
-      user_id: "user_1",
-      company_name: "Meta",
-      position: "UI/UX Designer",
-      start_date: "2019-05-01",
-      end_date: "2020-12-01",
-      description:
-        "Designed modern interfaces for social media tools with cross-platform consistency.",
-    },
-  ]);
-
+export default function ExperiencePage({
+  initialExperiences,
+}: {
+  initialExperiences: ExperienceEntry[];
+}) {
+  const [experiences, setExperiences] = useState<ExperienceEntry[]>(
+    initialExperiences || []
+  );
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExperience, setEditingExperience] =
     useState<ExperienceEntry | null>(null);
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  // 🧩 Handle add/edit submission
-  const handleSubmit = (data: ExperienceFormData) => {
-    if (editingExperience) {
-      // Update existing experience
-      setExperiences((prev) =>
-        prev.map((exp) =>
-          exp.id === editingExperience.id ? { ...exp, ...data } : exp
-        )
-      );
-    } else {
-      // Add new experience
-      const newExperience: ExperienceEntry = {
-        id: Date.now().toString(),
-        user_id: "user_1",
-        company_name: data.company_name,
-        position: data.position,
-        start_date: data.start_date,
-        end_date: data.end_date,
-        description: data.description || "",
-      };
-      setExperiences([newExperience, ...experiences]);
-    }
+  // Fetch experience data from server on component mount
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      try {
+        const data: any = await getExperiences();
+        if (data.success) {
+          setExperiences(data.data);
+        } else {
+          toast.error(data.error || "Failed to fetch experiences");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong while fetching experiences");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setIsFormOpen(false);
-    setEditingExperience(null);
+    fetchExperiences();
+  }, []);
+
+  // Handle Add/Edit Submit
+  const handleSubmit = (data: {
+    companyName: string;
+    position: string;
+    startYear: string;
+    endYear: string;
+    description?: string;
+  }) => {
+    (async () => {
+      try {
+        let res: any;
+
+        if (editingExperience) {
+          res = await updateExperience(editingExperience.id, {
+            ...data,
+            startYear: Number(data.startYear),
+            endYear: Number(data.endYear),
+            description: data.description ?? "",
+          });
+
+          if (res.success) {
+            setExperiences((prev) =>
+              prev.map((exp) =>
+                exp.id === editingExperience.id ? res.data : exp
+              )
+            );
+            setHighlightedId(editingExperience.id);
+            toast.success("Experience updated successfully");
+          } else {
+            toast.error(res.error);
+          }
+        } else {
+          res = await createExperience({
+            ...data,
+            startYear: Number(data.startYear),
+            endYear: Number(data.endYear),
+            description: data.description ?? "",
+          });
+
+          if (res.success) {
+            setExperiences((prev) => [res.data, ...prev]);
+            setHighlightedId(res.data.id);
+            toast.success("Experience added successfully");
+          } else {
+            toast.error(res.error);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong");
+      } finally {
+        setIsFormOpen(false);
+        setEditingExperience(null);
+        setTimeout(() => setHighlightedId(null), 3000);
+      }
+    })();
   };
 
-  const handleDelete = (id: string) => {
-    setExperiences((prev) => prev.filter((exp) => exp.id !== id));
+  // Handle Delete
+  const handleDelete = async (id: string) => {
+    setDeletingIds((prev) => new Set(prev).add(id));
+    try {
+      const res: any = await deleteExperience(id);
+      if (res.success) {
+        setExperiences((prev) => prev.filter((exp) => exp.id !== id));
+        toast.success("Experience deleted successfully");
+      } else {
+        toast.error(res.error);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong while deleting");
+    } finally {
+      setDeletingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
   };
 
   const handleEdit = (experience: ExperienceEntry) => {
@@ -100,13 +157,11 @@ export default function ExperiencePage() {
   return (
     <>
       <ThreeBackground />
-
-      <div className="space-y-8">
-        {/* 🧭 Header */}
+      <div className="space-y-6">
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -15 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
           <div>
@@ -134,14 +189,13 @@ export default function ExperiencePage() {
           )}
         </motion.div>
 
-        {/* 📝 Form Section */}
+        {/* Form */}
         <AnimatePresence mode="wait">
           {isFormOpen && (
             <motion.div
-              key="form"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
               <ExperienceForm
@@ -150,10 +204,10 @@ export default function ExperiencePage() {
                 initialData={
                   editingExperience
                     ? {
-                        company_name: editingExperience.company_name,
+                        companyName: editingExperience.companyName,
                         position: editingExperience.position,
-                        start_date: editingExperience.start_date,
-                        end_date: editingExperience.end_date,
+                        startYear: editingExperience.startYear,
+                        endYear: editingExperience.endYear,
                         description: editingExperience.description,
                       }
                     : undefined
@@ -163,18 +217,21 @@ export default function ExperiencePage() {
           )}
         </AnimatePresence>
 
-        {/* 💼 Experience List */}
+        {/* Cards */}
         {!isFormOpen && (
           <motion.div
-            key="list"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="grid gap-4"
           >
-            {experiences.length === 0 ? (
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : experiences.length === 0 ? (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="relative group"
               >
@@ -200,10 +257,19 @@ export default function ExperiencePage() {
               experiences.map((experience, index) => (
                 <ExperienceCard
                   key={experience.id}
-                  experience={experience}
+                  experience={{
+                    id: experience.id,
+                    companyName: experience.companyName,
+                    position: experience.position,
+                    startYear: experience.startYear,
+                    endYear: experience.endYear,
+                    description: experience.description,
+                  }}
                   onEdit={() => handleEdit(experience)}
                   onDelete={() => handleDelete(experience.id)}
                   index={index}
+                  highlight={highlightedId === experience.id}
+                  loading={deletingIds.has(experience.id)}
                 />
               ))
             )}

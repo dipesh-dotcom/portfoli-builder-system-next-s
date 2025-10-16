@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,20 +10,23 @@ import {
   Edit,
   Trash2,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 
 type ExperienceCardProps = {
   experience: {
     id: string;
-    company_name: string;
+    companyName: string;
     position: string;
-    start_year: string;
-    end_year: string;
+    startYear: string;
+    endYear: string;
     description?: string;
   };
   onEdit: () => void;
   onDelete: () => void;
   index?: number;
+  highlight?: boolean;
+  loading?: boolean;
 };
 
 export function ExperienceCard({
@@ -32,12 +34,13 @@ export function ExperienceCard({
   onEdit,
   onDelete,
   index = 0,
+  highlight = false,
+  loading = false,
 }: ExperienceCardProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const duration =
-    Number.parseInt(experience.end_year) -
-    Number.parseInt(experience.start_year);
+    Number.parseInt(experience.endYear) - Number.parseInt(experience.startYear);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -50,15 +53,24 @@ export function ExperienceCard({
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: highlight ? 1.03 : 1,
+        boxShadow: highlight
+          ? "0px 0px 15px rgba(99,102,241,0.5)"
+          : "0px 0px 0px transparent",
+      }}
       transition={{ delay: index * 0.1, duration: 0.5, ease: "easeOut" }}
       className="relative group"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Gradient Border */}
       <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-pink-400 to-indigo-500 rounded-xl blur opacity-0 group-hover:opacity-60 transition duration-700 animate-gradient-xy" />
 
+      {/* Hover Radial Light */}
       {isHovered && (
         <motion.div
           className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
@@ -68,15 +80,19 @@ export function ExperienceCard({
         />
       )}
 
+      {/* Main Card */}
       <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20">
+        {/* Light Sweep Effect */}
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
           <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
         </div>
 
+        {/* Card Content */}
         <div className="relative p-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div className="flex-1 space-y-2">
               <div className="flex items-start gap-2">
+                {/* Company Icon */}
                 <motion.div
                   className="p-1.5 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg mt-1 relative overflow-hidden"
                   whileHover={{ scale: 1.1, rotate: 5 }}
@@ -86,10 +102,11 @@ export function ExperienceCard({
                   <Building className="w-4 h-4 text-primary relative z-10" />
                 </motion.div>
 
+                {/* Company & Position */}
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-300">
-                      {experience.company_name}
+                      {experience.companyName}
                     </h3>
                     <motion.div
                       initial={{ opacity: 0, scale: 0 }}
@@ -109,11 +126,12 @@ export function ExperienceCard({
                 </div>
               </div>
 
+              {/* Duration & Description */}
               <div className="space-y-1.5 pl-8">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Calendar className="w-3.5 h-3.5" />
                   <span>
-                    {experience.start_year} - {experience.end_year}
+                    {experience.startYear} - {experience.endYear}
                   </span>
                   <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-xs rounded-full font-medium">
                     {duration} {duration === 1 ? "year" : "years"}
@@ -126,6 +144,7 @@ export function ExperienceCard({
                   </p>
                 )}
 
+                {/* Bottom Gradient Line */}
                 <div className="w-full h-0.5 bg-border rounded-full overflow-hidden">
                   <motion.div
                     className="h-full bg-gradient-to-r from-indigo-500 to-pink-400"
@@ -141,6 +160,7 @@ export function ExperienceCard({
               </div>
             </div>
 
+            {/* Buttons */}
             <div className="flex sm:flex-col gap-1.5">
               <motion.div
                 whileHover={{ scale: 1.15, rotate: 5 }}
@@ -165,10 +185,21 @@ export function ExperienceCard({
                   variant="ghost"
                   size="icon"
                   onClick={onDelete}
-                  className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive transition-all duration-300 relative overflow-hidden group/btn"
+                  disabled={loading}
+                  className={`h-8 w-8 transition-all duration-300 relative overflow-hidden group/btn ${
+                    loading
+                      ? "cursor-not-allowed opacity-60"
+                      : "hover:bg-destructive/10 hover:text-destructive"
+                  }`}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-destructive/0 via-destructive/20 to-destructive/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
-                  <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                  {loading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-destructive" />
+                  ) : (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-r from-destructive/0 via-destructive/20 to-destructive/0 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
+                      <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                    </>
+                  )}
                 </Button>
               </motion.div>
             </div>

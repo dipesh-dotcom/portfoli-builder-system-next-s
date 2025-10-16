@@ -11,6 +11,7 @@ import {
   Edit,
   Trash2,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 
 type EducationCardProps = {
@@ -162,9 +163,7 @@ export function EducationCard({
               </Button>
               <Button variant="ghost" size="icon" onClick={onDelete}>
                 {loading ? (
-                  <div className="flex justify-center items-center h-40">
-                    <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
-                  </div>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-destructive" />
                 ) : (
                   <Trash2 className="w-3.5 h-3.5" />
                 )}
