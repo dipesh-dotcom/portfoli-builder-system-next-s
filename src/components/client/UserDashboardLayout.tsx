@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Moon,
   Sun,
-  Bell,
   LayoutDashboard,
   UserCircle,
   GraduationCap,
@@ -18,7 +17,7 @@ import {
   FileText,
   Wrench,
   Languages,
-  Cog,
+  Home,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -207,14 +206,15 @@ export function UserDashboardLayout({
               </Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all relative"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full animate-pulse" />
-              </Button>
+              <Link href={"/"}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all relative"
+                >
+                  <Home className="h-5 w-5" />
+                </Button>
+              </Link>
             </motion.div>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
               <Button

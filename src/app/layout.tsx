@@ -7,13 +7,12 @@ import { Suspense } from "react";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import NavbarWrapper from "@/components/NavbarWrapper";
-import { Navbar } from "@/components/Navbar";
 import Loader from "./loading";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "Client Dashboard",
-  description: "Modern client dashboard with Aceternity UI",
+  title: "Portfolio Builder System",
+  description: "Modern Portfolio Builder System",
   generator: "v0.app",
 };
 
@@ -44,7 +43,6 @@ export default function RootLayout({
           className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}
         >
           <NavbarWrapper />
-          {/* <Navbar /> */}
           <Suspense fallback={<Loader />}>{children}</Suspense>
           <Analytics />
         </body>

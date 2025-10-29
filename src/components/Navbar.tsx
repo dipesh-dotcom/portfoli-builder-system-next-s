@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun } from "lucide-react";
+import { Menu, X, Moon, Sun, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { UserButton, useUser } from "@clerk/nextjs";
 
 export function Navbar() {
+  const { user, isLoaded } = useUser();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -60,11 +62,13 @@ export function Navbar() {
               transition={{ duration: 0.6 }}
               className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-400 dark:from-indigo-400 dark:to-pink-300 flex items-center justify-center"
             >
-              <span className="text-white font-bold text-xl">C</span>
+              <span className="text-white font-bold text-xl">P</span>
             </motion.div>
             <span className="text-xl font-bold text-gray-900 dark:text-gray-50 hidden sm:block">
-              Client
-              <span className="text-indigo-500 dark:text-indigo-400">Hub</span>
+              Port
+              <span className="text-indigo-500 dark:text-indigo-400">
+                Score
+              </span>
             </span>
           </Link>
 
@@ -123,21 +127,59 @@ export function Navbar() {
             </motion.button>
 
             {/* Desktop Auth Buttons */}
-            <div className="hidden md:flex items-center space-x-2">
-              <Link href="/sign-in">
-                <Button
-                  variant="ghost"
-                  className="text-gray-600 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400"
-                >
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/sign-up">
-                <Button className="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
+            {isLoaded && (
+              <div className="hidden md:flex items-center space-x-2">
+                {user ? (
+                  <div className="flex items-center justify-end gap-4 p-5">
+                    {/* Dashboard Button */}
+                    <Link href="/dashboard">
+                      <Button className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white transition-colors">
+                        <LayoutDashboard className="h-4 w-4" />
+                        Dashboard
+                      </Button>
+                    </Link>
+
+                    {/* User Avatar Button with animation */}
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full border border-transparent hover:border-primary/30 hover:bg-primary/10 transition-all"
+                      >
+                        <UserButton
+                          appearance={{
+                            elements: {
+                              userButtonAvatarBox: "h-5 w-5",
+                              userButtonTrigger:
+                                "rounded-full hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all",
+                            },
+                          }}
+                        />
+                      </Button>
+                    </motion.div>
+                  </div>
+                ) : (
+                  <>
+                    <Link href="/sign-in">
+                      <Button
+                        variant="ghost"
+                        className="text-gray-600 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400"
+                      >
+                        Sign In
+                      </Button>
+                    </Link>
+                    <Link href="/sign-up">
+                      <Button className="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white">
+                        Get Started
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <motion.button
@@ -191,25 +233,38 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-                  <Link
-                    href="/sign-in"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button
-                      variant="outline"
-                      className="w-full border-gray-300 dark:border-gray-600 bg-transparent"
+                  {user ? (
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link
-                    href="/sign-up"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Button className="w-full bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white">
-                      Get Started
-                    </Button>
-                  </Link>
+                      <Button className="w-full bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white">
+                        Dashboard
+                      </Button>
+                    </Link>
+                  ) : (
+                    <>
+                      <Link
+                        href="/sign-in"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Button
+                          variant="outline"
+                          className="w-full border-gray-300 dark:border-gray-600 bg-transparent"
+                        >
+                          Sign In
+                        </Button>
+                      </Link>
+                      <Link
+                        href="/sign-up"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <Button className="w-full bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white">
+                          Get Started
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -218,20 +273,4 @@ export function Navbar() {
       </AnimatePresence>
     </motion.nav>
   );
-}
-
-{
-  /* <div className="flex justify-between items-center p-4 gap-4 h-16">
-        <SignedOut>
-          <SignInButton />
-          <SignUpButton>
-            <button className="bg-[#6c47ff] text-ceramic-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
-              Sign Up
-            </button>
-          </SignUpButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </div> */
 }
