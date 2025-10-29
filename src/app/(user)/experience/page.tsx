@@ -27,14 +27,8 @@ type ExperienceEntry = {
   updatedAt: string;
 };
 
-export default function ExperiencePage({
-  initialExperiences,
-}: {
-  initialExperiences: ExperienceEntry[];
-}) {
-  const [experiences, setExperiences] = useState<ExperienceEntry[]>(
-    initialExperiences || []
-  );
+export default function ExperiencePage() {
+  const [experiences, setExperiences] = useState<ExperienceEntry[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingExperience, setEditingExperience] =
     useState<ExperienceEntry | null>(null);

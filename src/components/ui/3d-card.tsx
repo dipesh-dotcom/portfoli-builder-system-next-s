@@ -171,7 +171,7 @@ export function CardItem<T extends React.ElementType = "div">({
 }
 
 // -----------------------------
-// 🪄 useMouseEnter Hook
+// 🪄 useMouseEnter H
 // -----------------------------
 export const useMouseEnter = () => {
   const context = useContext(MouseEnterContext);

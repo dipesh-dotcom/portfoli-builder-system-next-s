@@ -26,14 +26,8 @@ type EducationEntry = {
   updatedAt: string;
 };
 
-export default function EducationPage({
-  initialEducations,
-}: {
-  initialEducations: EducationEntry[];
-}) {
-  const [educations, setEducations] = useState<EducationEntry[]>(
-    initialEducations || []
-  );
+export default function EducationPage() {
+  const [educations, setEducations] = useState<EducationEntry[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] =
     useState<EducationEntry | null>(null);

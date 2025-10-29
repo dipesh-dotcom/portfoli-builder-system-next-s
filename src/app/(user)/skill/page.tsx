@@ -24,12 +24,8 @@ type SkillEntry = {
   updated_at: string;
 };
 
-export default function SkillPage({
-  initialSkills,
-}: {
-  initialSkills: SkillEntry[];
-}) {
-  const [skills, setSkills] = useState<SkillEntry[]>(initialSkills || []);
+export default function SkillPage() {
+  const [skills, setSkills] = useState<SkillEntry[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<SkillEntry | null>(null);

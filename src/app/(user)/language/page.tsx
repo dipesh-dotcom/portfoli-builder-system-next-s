@@ -24,14 +24,8 @@ type LanguageEntry = {
   updated_at: string;
 };
 
-export default function LanguagePage({
-  initialLanguages,
-}: {
-  initialLanguages: LanguageEntry[];
-}) {
-  const [languages, setLanguages] = useState<LanguageEntry[]>(
-    initialLanguages || ""
-  );
+export default function LanguagePage() {
+  const [languages, setLanguages] = useState<LanguageEntry[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<LanguageEntry | null>(
