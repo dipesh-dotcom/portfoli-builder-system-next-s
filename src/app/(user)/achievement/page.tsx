@@ -25,15 +25,8 @@ type AchievementEntry = {
   updated_at: string;
 };
 
-export default function AchievementPage({
-  initialAchievements,
-}: {
-  initialAchievements: AchievementEntry[];
-}) {
-  const [achievements, setAchievements] = useState<AchievementEntry[]>(
-    initialAchievements || []
-  );
-
+export default function AchievementPage() {
+  const [achievements, setAchievements] = useState<AchievementEntry[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAchievement, setEditingAchievement] =
     useState<AchievementEntry | null>(null);
@@ -41,7 +34,7 @@ export default function AchievementPage({
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  // Fetch education data from server on component mount
+  // Fetch achievements on mount
   useEffect(() => {
     const fetchAchievements = async () => {
       try {
@@ -49,7 +42,7 @@ export default function AchievementPage({
         if (data.success) {
           setAchievements(data.data);
         } else {
-          toast.error(data.error || "Failed to fetch achievements entries");
+          toast.error(data.error || "Failed to fetch achievements");
         }
       } catch (error) {
         console.error(error);
@@ -61,10 +54,6 @@ export default function AchievementPage({
 
     fetchAchievements();
   }, []);
-
-  const parseDateOnly = (dateString: string): Date => {
-    return new Date(dateString + "T00:00:00Z");
-  };
 
   const handleSubmit = async (data: {
     title: string;
