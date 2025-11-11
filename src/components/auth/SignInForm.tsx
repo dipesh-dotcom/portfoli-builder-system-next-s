@@ -8,16 +8,40 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Chrome, Github, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export function SignInForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setIsLoading(true);
-    setTimeout(() => setIsLoading(false), 2000);
+
+    const res: any = await signIn("credentials", {
+      redirect: false,
+      email,
+      password,
+    } as any);
+
+    setIsLoading(false);
+    if (res?.error) {
+      let message = String(res.error);
+      if (message === "CredentialsSignin" || /invalid/i.test(message)) {
+        message = "Invalid email or password";
+      } else if (/both fields/i.test(message)) {
+        message = "Both email and password are required";
+      }
+      toast.error(message);
+    } else {
+      toast.success(res.message ?? "Logged in successfully");
+      router.push("/");
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
@@ -112,6 +136,7 @@ export function SignInForm() {
                 <Input
                   id="email"
                   type="email"
+                  name="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -137,6 +162,7 @@ export function SignInForm() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="password"
+                  name="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}

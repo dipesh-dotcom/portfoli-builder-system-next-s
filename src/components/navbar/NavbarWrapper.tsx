@@ -3,9 +3,10 @@ import { useUser } from "@clerk/nextjs";
 import React from "react";
 import { Navbar } from "./Navbar";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 function NavbarWrapper() {
-  const { user, isLoaded } = useUser();
+  const { data: session } = useSession();
   const pathName = usePathname();
 
   const userRoutes = [
@@ -20,11 +21,7 @@ function NavbarWrapper() {
     "/language",
   ];
 
-  if (
-    isLoaded &&
-    user &&
-    userRoutes.some((route) => pathName.startsWith(route))
-  ) {
+  if (session && userRoutes.some((route) => pathName.startsWith(route))) {
     return null;
   }
 

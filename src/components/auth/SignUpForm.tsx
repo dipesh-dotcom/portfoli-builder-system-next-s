@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -9,57 +7,48 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Chrome, Github, Mail, Lock, User, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { OAuthStrategy } from "@clerk/types";
-import { useSignIn } from "@clerk/nextjs";
+import { registerUser } from "@/actions/register";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import GoogleAuthButton from "../buttons/google-auth-button";
+import GithubAuthButton from "../buttons/github-auth-button";
 
 export function SignUpForm() {
-  const { signIn, isLoaded } = useSignIn();
-
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  if (!isLoaded) return <div>Loading...</div>;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+
     try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-      const data = await res.json();
-      if (!data.success) throw new Error(data.message);
-      alert("Account created! Please sign in.");
-      window.location.href = "/sign-in";
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("password", password);
+      // Replace this with your API endpoint
+      const res = await registerUser(formData);
+
+      if (!res.success) {
+        // Handle field errors from Zod
+        if (res.errors) {
+          toast.error(Object.values(res.errors).join(", "));
+        } else {
+          toast.error(res.message || "Failed to create account");
+        }
+        return;
+      }
+
+      toast.success("Account created! Please verify your email.");
+      router.push("/sign-in");
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleSocialSignUp = (strategy: OAuthStrategy) => {
-    return signIn
-      .authenticateWithRedirect({
-        strategy,
-        redirectUrl: "/sign-in/sso-callback",
-        redirectUrlComplete: "/sign-in/tasks", // Learn more about session tasks at https://clerk.com/docs/guides/development/custom-flows/overview#session-tasks
-      })
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err: any) => {
-        // See https://clerk.com/docs/guides/development/custom-flows/error-handling
-        // for more info on error handling
-        console.log(err.errors);
-        console.error(err, null, 2);
-      });
   };
 
   return (
@@ -94,31 +83,15 @@ export function SignUpForm() {
             </motion.p>
           </div>
 
-          {/* Social Sign Up Buttons */}
+          {/* Social buttons (optional placeholders) */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="space-y-3 mb-6"
           >
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full bg-card border-border hover:bg-muted hover:border-primary/30 text-foreground transition-all duration-300 hover:scale-[1.02]"
-              onClick={() => handleSocialSignUp("oauth_google")}
-            >
-              <Chrome className="w-5 h-5 mr-2" />
-              Continue with Google
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full bg-card border-border hover:bg-muted hover:border-primary/30 text-foreground transition-all duration-300 hover:scale-[1.02]"
-              onClick={() => handleSocialSignUp("oauth_github")}
-            >
-              <Github className="w-5 h-5 mr-2" />
-              Continue with GitHub
-            </Button>
+            <GoogleAuthButton />
+            <GithubAuthButton />
           </motion.div>
 
           {/* Divider */}
@@ -154,6 +127,7 @@ export function SignUpForm() {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="name"
+                  name="name"
                   type="text"
                   placeholder="John Doe"
                   value={name}
@@ -172,6 +146,7 @@ export function SignUpForm() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
@@ -190,6 +165,7 @@ export function SignUpForm() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="password"
+                  name="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
@@ -209,36 +185,7 @@ export function SignUpForm() {
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed group"
             >
-              {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Creating account...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center">
-                  Create account
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </span>
-              )}
+              {isLoading ? "Creating account..." : "Create account"}
             </Button>
           </motion.form>
 

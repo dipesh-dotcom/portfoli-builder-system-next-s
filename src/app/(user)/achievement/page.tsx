@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
-import { ThreeBackground } from "@/components/ThreeBackground";
+import { ThreeBackground } from "@/components/home/ThreeBackground";
 import { AchievementForm } from "@/components/forms/AchievementForm";
 import { AchievementCard } from "@/components/cards/AchievementCard";
 import { Button } from "@/components/ui/button";

@@ -18,12 +18,15 @@ import {
   Wrench,
   Languages,
   Home,
+  User,
+  LogOut,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserButton } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import GlobalLoading from "@/app/loading";
+import { signOut } from "next-auth/react";
+import toast from "react-hot-toast";
 
 export function UserDashboardLayout({
   children,
@@ -47,6 +50,14 @@ export function UserDashboardLayout({
       document.documentElement.classList.add("dark");
     }
   }, []);
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/" });
+    toast.success("Logged out successfully!", {
+      duration: 2000,
+      position: "bottom-right",
+    });
+  };
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -222,16 +233,16 @@ export function UserDashboardLayout({
                 size="icon"
                 className="rounded-full hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all"
               >
-                <UserButton
-                  // afterSignOutUrl="/" // where to redirect after logout
-                  appearance={{
-                    elements: {
-                      userButtonAvatarBox: "h-5 w-5", // adjust avatar size
-                      userButtonTrigger:
-                        "rounded-full hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all",
-                    },
-                  }}
-                />
+                <User />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                className="rounded-full hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all"
+              >
+                <LogOut />
+                Logout
               </Button>
             </motion.div>
           </div>

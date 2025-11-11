@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Moon, Sun, LayoutDashboard } from "lucide-react";
+import { Menu, X, Moon, Sun, LayoutDashboard, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useSession } from "next-auth/react";
 
 export function Navbar() {
-  const { user, isLoaded } = useUser();
+  const { data: session } = useSession();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
@@ -127,59 +127,50 @@ export function Navbar() {
             </motion.button>
 
             {/* Desktop Auth Buttons */}
-            {isLoaded && (
-              <div className="hidden md:flex items-center space-x-2">
-                {user ? (
-                  <div className="flex items-center justify-end gap-4 p-5">
-                    {/* Dashboard Button */}
-                    <Link href="/dashboard">
-                      <Button className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white transition-colors">
-                        <LayoutDashboard className="h-4 w-4" />
-                        Dashboard
-                      </Button>
-                    </Link>
 
-                    {/* User Avatar Button with animation */}
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+            <div className="hidden md:flex items-center space-x-2">
+              {session ? (
+                <div className="flex items-center justify-end gap-4 p-5">
+                  {/* Dashboard Button */}
+                  <Link href="/dashboard">
+                    <Button className="flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white transition-colors">
+                      <LayoutDashboard className="h-4 w-4" />
+                      Dashboard
+                    </Button>
+                  </Link>
+
+                  {/* User Avatar Button with animation */}
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="rounded-full border border-transparent hover:border-primary/30 hover:bg-primary/10 transition-all"
                     >
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-full border border-transparent hover:border-primary/30 hover:bg-primary/10 transition-all"
-                      >
-                        <UserButton
-                          appearance={{
-                            elements: {
-                              userButtonAvatarBox: "h-5 w-5",
-                              userButtonTrigger:
-                                "rounded-full hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all",
-                            },
-                          }}
-                        />
-                      </Button>
-                    </motion.div>
-                  </div>
-                ) : (
-                  <>
-                    <Link href="/sign-in">
-                      <Button
-                        variant="ghost"
-                        className="text-gray-600 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400"
-                      >
-                        Sign In
-                      </Button>
-                    </Link>
-                    <Link href="/sign-up">
-                      <Button className="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white">
-                        Get Started
-                      </Button>
-                    </Link>
-                  </>
-                )}
-              </div>
-            )}
+                      <User />
+                    </Button>
+                  </motion.div>
+                </div>
+              ) : (
+                <>
+                  <Link href="/sign-in">
+                    <Button
+                      variant="ghost"
+                      className="text-gray-600 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-400"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/sign-up">
+                    <Button className="bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-400 dark:hover:bg-indigo-500 text-white">
+                      Get Started
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <motion.button
@@ -233,7 +224,7 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-                  {user ? (
+                  {session ? (
                     <Link
                       href="/dashboard"
                       onClick={() => setIsMobileMenuOpen(false)}

@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThreeBackground } from "@/components/ThreeBackground";
+import { ThreeBackground } from "@/components/home/ThreeBackground";
 import { ProfileForm } from "@/components/forms/ProfileForm";
 import { Button } from "@/components/ui/button";
 import {

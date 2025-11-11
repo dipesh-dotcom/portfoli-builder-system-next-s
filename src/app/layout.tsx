@@ -6,9 +6,11 @@ import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import NavbarWrapper from "@/components/NavbarWrapper";
+import NavbarWrapper from "@/components/navbar/NavbarWrapper";
 import Loader from "./loading";
 import { Toaster } from "react-hot-toast";
+import { SessionProvider } from "next-auth/react";
+import { auth } from "@/lib/auth";
 
 export const metadata: Metadata = {
   title: "Portfolio Builder System",
@@ -16,13 +18,14 @@ export const metadata: Metadata = {
   generator: "v0.app",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   return (
-    <ClerkProvider>
+    <SessionProvider session={session}>
       <html lang="en" suppressHydrationWarning>
         <head>
           <script
@@ -48,6 +51,6 @@ export default function RootLayout({
         </body>
       </html>
       <Toaster />
-    </ClerkProvider>
+    </SessionProvider>
   );
 }
