@@ -69,7 +69,7 @@ export function DashboardContent() {
             whileHover={{ y: -5 }}
           >
             <Card className="bg-card border-border hover:border-primary/30 relative overflow-hidden group transition-all duration-300">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-secondary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               <CardHeader className="flex flex-row items-center justify-between pb-2 relative z-10">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -114,7 +114,7 @@ export function DashboardContent() {
           className="lg:col-span-2"
         >
           <Card className="bg-card border-border relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
 
             <CardHeader className="relative z-10">
               <CardTitle className="text-foreground">Recent Activity</CardTitle>
@@ -161,7 +161,7 @@ export function DashboardContent() {
           transition={{ duration: 0.5, delay: 0.3 }}
         >
           <Card className="bg-card border-border relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary/5 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-br from-secondary/5 via-transparent to-transparent pointer-events-none" />
 
             <CardHeader className="relative z-10">
               <CardTitle className="text-foreground">Quick Stats</CardTitle>

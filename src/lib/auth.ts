@@ -66,6 +66,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        if (!user.isActive) {
+          throw new Error(
+            "Your account has been deactivated. Please contact support for assistance."
+          );
+        }
+
+        //  Check for email verification - ONLY for CUSTOMER role, not ADMIN
+        if (user.role === "USER" && !user.emailVerified) {
+          throw new Error("EmailNotVerified"); // custom error
+        }
+
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
           return null;

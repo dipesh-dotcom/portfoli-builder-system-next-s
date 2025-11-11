@@ -115,12 +115,12 @@ export function UserDashboardLayout({
             transition-transform duration-300 ease-in-out
           `}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent pointer-events-none" />
 
           <div className="p-6 border-b border-sidebar-border relative z-10 flex items-center justify-between">
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="flex items-center justify-center h-12 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg border border-primary/20 backdrop-blur-sm flex-1"
+              className="flex items-center justify-center h-12 bg-linear-to-br from-primary/10 to-secondary/10 rounded-lg border border-primary/20 backdrop-blur-sm flex-1"
             >
               <span className="text-lg font-semibold text-sidebar-foreground">
                 Logo
@@ -165,7 +165,7 @@ export function UserDashboardLayout({
                             : "text-muted-foreground hover:text-sidebar-foreground"
                         }`}
                       >
-                        <span className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                        <span className="absolute inset-0 bg-linear-to-r from-primary/0 via-primary/10 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                         <item.icon className="mr-3 h-5 w-5 relative z-10" />
                         <span className="relative z-10">{item.name}</span>
                       </Button>
@@ -185,7 +185,7 @@ export function UserDashboardLayout({
           transition={{ duration: 0.5 }}
           className="h-16 border-b border-border bg-card/80 backdrop-blur-sm px-4 md:px-6 flex items-center justify-between relative"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-r from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
 
           <div className="flex items-center gap-3 relative z-10">
             <Button

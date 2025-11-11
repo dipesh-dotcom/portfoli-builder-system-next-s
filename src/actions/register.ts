@@ -5,6 +5,7 @@ import crypto from "crypto";
 import prisma from "@/lib/prisma";
 import { RegisterSchema } from "@/validations/auth/auth-schema";
 import { ZodError } from "zod";
+import { sendVerificationEmail } from "@/lib/mailer";
 
 export async function registerUser(formData: FormData) {
   try {
@@ -26,15 +27,25 @@ export async function registerUser(formData: FormData) {
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationExpiry = new Date();
+    verificationExpiry.setHours(verificationExpiry.getHours() + 24); // expires in 24 hours
     const user = await prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
         password: hashedPassword,
+        isActive: false,
+        verificationToken: verificationToken,
+        verificationExpiry: verificationExpiry,
       },
     });
 
     console.log("Created user:", user);
+
+    // Send verification email
+    await sendVerificationEmail(data.email, verificationToken);
 
     return {
       success: true,

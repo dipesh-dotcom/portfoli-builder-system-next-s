@@ -32,7 +32,9 @@ export function SignInForm() {
     setIsLoading(false);
     if (res?.error) {
       let message = String(res.error);
-      if (message === "CredentialsSignin" || /invalid/i.test(message)) {
+      if (message === "Configuration") {
+        message = "Email not verified. Please check your inbox.";
+      } else if (message === "CredentialsSignin" || /invalid/i.test(message)) {
         message = "Invalid email or password";
       } else if (/both fields/i.test(message)) {
         message = "Both email and password are required";
@@ -56,7 +58,7 @@ export function SignInForm() {
       className="w-full max-w-md mx-4 relative z-10"
     >
       <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+        <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
 
         <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-2xl">
           <div className="text-center mb-8">
@@ -176,7 +178,7 @@ export function SignInForm() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed group"
+              className="w-full bg-linear-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed group"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
