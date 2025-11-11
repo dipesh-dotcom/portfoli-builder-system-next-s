@@ -9,7 +9,7 @@ export async function sendVerificationEmail(email: string, token: string) {
     },
   });
 
-  const verificationUrl = `${process.env.AUTH_URL}/action/auth/email-verification?token=${token}`;
+  const verificationUrl = `${process.env.NEXTAUTH_URL}/action/auth/email-verification?token=${token}`;
 
   const mailOptions = {
     from: process.env.EMAIL_USER,

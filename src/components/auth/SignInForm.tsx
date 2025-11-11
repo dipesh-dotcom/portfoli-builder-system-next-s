@@ -11,6 +11,8 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import GoogleAuthButton from "../buttons/google-auth-button";
+import GithubAuthButton from "../buttons/github-auth-button";
 
 export function SignInForm() {
   const router = useRouter();
@@ -22,7 +24,6 @@ export function SignInForm() {
     e.preventDefault();
 
     setIsLoading(true);
-
     const res: any = await signIn("credentials", {
       redirect: false,
       email,
@@ -58,9 +59,11 @@ export function SignInForm() {
       className="w-full max-w-md mx-4 relative z-10"
     >
       <div className="relative group">
-        <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+        {/* Color glow */}
+        <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
 
         <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-2xl">
+          {/* Heading */}
           <div className="text-center mb-8">
             <motion.h1
               initial={{ opacity: 0, y: -20 }}
@@ -80,32 +83,18 @@ export function SignInForm() {
             </motion.p>
           </div>
 
+          {/* Social buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="space-y-3 mb-6"
           >
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full bg-card border-border hover:bg-muted hover:border-primary/30 text-foreground transition-all duration-300 hover:scale-[1.02]"
-              onClick={() => handleSocialLogin("google")}
-            >
-              <Chrome className="w-5 h-5 mr-2" />
-              Continue with Google
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full bg-card border-border hover:bg-muted hover:border-primary/30 text-foreground transition-all duration-300 hover:scale-[1.02]"
-              onClick={() => handleSocialLogin("github")}
-            >
-              <Github className="w-5 h-5 mr-2" />
-              Continue with GitHub
-            </Button>
+            <GoogleAuthButton />
+            <GithubAuthButton />
           </motion.div>
 
+          {/* Divider */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -122,6 +111,7 @@ export function SignInForm() {
             </div>
           </motion.div>
 
+          {/* Form */}
           <motion.form
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -129,29 +119,33 @@ export function SignInForm() {
             onSubmit={handleSubmit}
             className="space-y-4"
           >
+            {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">
-                Email address
+              <Label htmlFor="email" className="text-foreground font-semibold">
+                Email address <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
-                  name="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
+                  className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
                   required
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-foreground">
-                  Password
+                <Label
+                  htmlFor="password"
+                  className="text-foreground font-semibold"
+                >
+                  Password <span className="text-destructive">*</span>
                 </Label>
                 <Link
                   href="/forgot-password"
@@ -169,50 +163,30 @@ export function SignInForm() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
+                  className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
                   required
                 />
               </div>
             </div>
 
+            {/* Button with Reset Password color tone */}
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-linear-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed group"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-sans font-semibold py-3 px-4 rounded transition-all duration-200 mt-6 flex items-center justify-center gap-2 shadow-md"
             >
               {isLoading ? (
-                <span className="flex items-center justify-center">
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Signing in...
-                </span>
+                "Signing in..."
               ) : (
-                <span className="flex items-center justify-center">
+                <>
                   Sign in
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </span>
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
               )}
             </Button>
           </motion.form>
 
+          {/* Sign up link */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -220,37 +194,15 @@ export function SignInForm() {
             className="mt-6 text-center"
           >
             <p className="text-muted-foreground text-sm">
-              Don't have an account?{" "}
+              Don’t have an account?{" "}
               <Link
                 href="/sign-up"
-                className="text-primary hover:text-primary/80 font-medium transition-colors"
+                className="text-primary hover:text-primary/80 font-medium transition-colors underline"
               >
                 Sign up
               </Link>
             </p>
           </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="mt-6 text-center text-xs text-muted-foreground"
-          >
-            By continuing, you agree to our{" "}
-            <Link
-              href="/terms"
-              className="underline hover:text-foreground transition-colors"
-            >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="underline hover:text-foreground transition-colors"
-            >
-              Privacy Policy
-            </Link>
-          </motion.p>
         </div>
       </div>
     </motion.div>

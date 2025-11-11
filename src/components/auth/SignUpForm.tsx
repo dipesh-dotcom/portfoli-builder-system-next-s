@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Chrome, Github, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Mail, Lock, User } from "lucide-react";
 import Link from "next/link";
 import { registerUser } from "@/actions/register";
 import toast from "react-hot-toast";
@@ -29,11 +29,10 @@ export function SignUpForm() {
       formData.append("name", name);
       formData.append("email", email);
       formData.append("password", password);
-      // Replace this with your API endpoint
+
       const res = await registerUser(formData);
 
       if (!res.success) {
-        // Handle field errors from Zod
         if (res.errors) {
           toast.error(Object.values(res.errors).join(", "));
         } else {
@@ -58,10 +57,11 @@ export function SignUpForm() {
       transition={{ duration: 0.5 }}
       className="w-full max-w-md mx-4 relative z-10"
     >
-      {/* Card with glassmorphism */}
+      {/* Outer card glow */}
       <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+        <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
 
+        {/* Inner card */}
         <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
@@ -83,7 +83,7 @@ export function SignUpForm() {
             </motion.p>
           </div>
 
-          {/* Social buttons (optional placeholders) */}
+          {/* Social buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -119,9 +119,10 @@ export function SignUpForm() {
             onSubmit={handleSubmit}
             className="space-y-4"
           >
+            {/* Full Name */}
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-foreground">
-                Full name
+              <Label htmlFor="name" className="text-foreground font-semibold">
+                Full name <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -132,15 +133,16 @@ export function SignUpForm() {
                   placeholder="John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="pl-10 bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
+                  className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
                   required
                 />
               </div>
             </div>
 
+            {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">
-                Email address
+              <Label htmlFor="email" className="text-foreground font-semibold">
+                Email address <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -151,15 +153,19 @@ export function SignUpForm() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
+                  className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
                   required
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">
-                Password
+              <Label
+                htmlFor="password"
+                className="text-foreground font-semibold"
+              >
+                Password <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -170,7 +176,7 @@ export function SignUpForm() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20"
+                  className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
                   required
                   minLength={8}
                 />
@@ -180,10 +186,11 @@ export function SignUpForm() {
               </p>
             </div>
 
+            {/* Submit button */}
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed group"
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-4 rounded transition-all duration-200 mt-6 flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
             >
               {isLoading ? "Creating account..." : "Create account"}
             </Button>
@@ -200,7 +207,7 @@ export function SignUpForm() {
               Already have an account?{" "}
               <Link
                 href="/sign-in"
-                className="text-primary hover:text-primary/80 font-medium transition-colors"
+                className="text-primary hover:text-primary/80 font-medium transition-colors underline"
               >
                 Sign in
               </Link>

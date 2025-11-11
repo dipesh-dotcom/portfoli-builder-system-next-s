@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
-import Facebook from "next-auth/providers/facebook";
 import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
@@ -24,21 +24,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return {
           name: profile.name,
           email: profile.email,
-          image: profile.picture,
+          image: profile.avatar_url,
           role: "USER",
           isActive: true,
         };
       },
     }),
-    Facebook({
-      clientId: process.env.FACEBOOK_CLIENT_ID,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID,
+      clientSecret: process.env.AUTH_GITHUB_SECRET,
       allowDangerousEmailAccountLinking: true,
       profile(profile) {
         return {
           name: profile.name,
           email: profile.email,
-          image: profile.picture.data.url,
+          image: profile.avatar_url,
           role: "USER",
           isActive: true,
         };
