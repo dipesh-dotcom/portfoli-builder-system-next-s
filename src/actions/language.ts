@@ -1,9 +1,8 @@
 "use server";
 
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { clerkClient } from "@clerk/clerk-sdk-node";
 
 export type LanguageData = {
   name: string;
@@ -12,28 +11,16 @@ export type LanguageData = {
 
 export async function createLanguage(data: LanguageData) {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
 
-    let user = await prisma.user.findUnique({ where: { clerkId: userId } });
-
-    if (!user) {
-      const clerkUser = await clerkClient.users.getUser(userId);
-      user = await prisma.user.create({
-        data: {
-          clerkId: userId,
-          email: clerkUser.emailAddresses[0]?.emailAddress || "",
-          name:
-            `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
-            null,
-        },
-      });
-    }
+    let user = await prisma.user.findUnique({ where: { id: userId } });
 
     const language = await prisma.language.create({
       data: {
-        userId: user.id,
+        userId: userId,
         ...data,
       },
     });
@@ -53,7 +40,8 @@ export async function createLanguage(data: LanguageData) {
 
 export async function getLanguages() {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId)
       return {
         success: false,
@@ -63,7 +51,7 @@ export async function getLanguages() {
       };
 
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+      where: { id: userId },
       include: { languages: { orderBy: { id: "desc" } } },
     });
 
@@ -81,11 +69,12 @@ export async function getLanguages() {
 
 export async function updateLangugae(id: string, data: LanguageData) {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user)
       return { success: false, error: "User not found", statusCode: 404 };
 
@@ -115,11 +104,12 @@ export async function updateLangugae(id: string, data: LanguageData) {
 
 export async function deleteLanguage(id: string) {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user)
       return { success: false, error: "User not found", statusCode: 404 };
 

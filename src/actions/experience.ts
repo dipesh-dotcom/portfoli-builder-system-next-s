@@ -1,11 +1,7 @@
 "use server";
-
-import { auth } from "@clerk/nextjs/server";
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { clerkClient } from "@clerk/clerk-sdk-node";
-import { number } from "zod";
-import { EducationData } from "./education";
 
 export type ExperienceData = {
   companyName: string;
@@ -17,27 +13,16 @@ export type ExperienceData = {
 
 export async function createExperience(data: ExperienceData) {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
 
-    let user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    let user = await prisma.user.findUnique({ where: { id: userId } });
 
-    if (!user) {
-      const clerkUser = await clerkClient.users.getUser(userId);
-      user = await prisma.user.create({
-        data: {
-          clerkId: userId,
-          email: clerkUser.emailAddresses[0]?.emailAddress || "",
-          name:
-            `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() ||
-            null,
-        },
-      });
-    }
     const experience = await prisma.experience.create({
       data: {
-        userId: user.id,
+        userId: userId,
         ...data,
       },
     });
@@ -56,7 +41,8 @@ export async function createExperience(data: ExperienceData) {
 
 export async function getExperiences() {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId)
       return {
         success: false,
@@ -66,7 +52,7 @@ export async function getExperiences() {
       };
 
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
+      where: { id: userId },
       include: { experiences: { orderBy: { startYear: "desc" } } },
     });
     return { success: true, data: user?.experiences || [], statusCode: 200 };
@@ -83,11 +69,12 @@ export async function getExperiences() {
 
 export async function updateExperience(id: string, data: ExperienceData) {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user)
       return { success: false, error: "User not found", statusCode: 404 };
 
@@ -116,11 +103,12 @@ export async function updateExperience(id: string, data: ExperienceData) {
 
 export async function deleteExperience(id: string) {
   try {
-    const { userId } = await auth();
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
 
-    const user = await prisma.user.findUnique({ where: { clerkId: userId } });
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user)
       return { success: false, error: "User not found", statusCode: 404 };
 

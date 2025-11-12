@@ -5,7 +5,6 @@ import { GeistMono } from "geist/font/mono";
 import { Analytics } from "@vercel/analytics/next";
 import { Suspense } from "react";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import NavbarWrapper from "@/components/navbar/NavbarWrapper";
 import Loader from "./loading";
 import { Toaster } from "react-hot-toast";
