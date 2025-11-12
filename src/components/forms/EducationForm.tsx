@@ -86,6 +86,7 @@ export function EducationForm({
       setIsSubmitting(false);
     }
   };
+
   const degreeTypes = [
     "High School Diploma",
     "Associate Degree",
@@ -106,7 +107,7 @@ export function EducationForm({
       className="w-full max-w-2xl mx-auto"
     >
       <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+        {/* Gradient removed */}
 
         <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-6 md:p-8 shadow-2xl">
           <motion.div
@@ -136,6 +137,7 @@ export function EducationForm({
               onSubmit={form.handleSubmit(handleSubmit)}
               className="space-y-6"
             >
+              {/* Institute Name */}
               <FormField
                 control={form.control}
                 name="instituteName"
@@ -157,6 +159,7 @@ export function EducationForm({
                 )}
               />
 
+              {/* Degree */}
               <FormField
                 control={form.control}
                 name="degree"
@@ -188,6 +191,7 @@ export function EducationForm({
                 )}
               />
 
+              {/* Start & End Year */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -238,6 +242,7 @@ export function EducationForm({
                 />
               </div>
 
+              {/* Buttons */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -247,38 +252,9 @@ export function EducationForm({
                 <Button
                   type="submit"
                   disabled={isSubmitting || isLoading}
-                  className="flex-1 bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className="flex-1 bg-primary text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting || isLoading ? (
-                    <span className="flex items-center justify-center">
-                      <svg
-                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      Saving...
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center">
-                      <Save className="w-5 h-5 mr-2" />
-                      Save Education
-                    </span>
-                  )}
+                  {isSubmitting || isLoading ? "Saving..." : "Save Education"}
                 </Button>
 
                 {onCancel && (

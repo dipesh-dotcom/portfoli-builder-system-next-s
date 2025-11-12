@@ -26,7 +26,6 @@ type LanguageEntry = {
 
 export default function LanguagePage() {
   const [languages, setLanguages] = useState<LanguageEntry[]>([]);
-
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLanguage, setEditingLanguage] = useState<LanguageEntry | null>(
     null
@@ -35,7 +34,6 @@ export default function LanguagePage() {
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  // Fetch language data from server on component mount
   useEffect(() => {
     const fetchLanguages = async () => {
       try {
@@ -132,6 +130,7 @@ export default function LanguagePage() {
     <>
       <ThreeBackground />
       <div className="space-y-6">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -148,11 +147,12 @@ export default function LanguagePage() {
               Manage your language skills and proficiency
             </p>
           </div>
+
           {!isFormOpen && (
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 onClick={() => setIsFormOpen(true)}
-                className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-primary text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Add Language
@@ -161,6 +161,7 @@ export default function LanguagePage() {
           )}
         </motion.div>
 
+        {/* Form */}
         <AnimatePresence mode="wait">
           {isFormOpen && (
             <motion.div
@@ -204,6 +205,7 @@ export default function LanguagePage() {
           )}
         </AnimatePresence>
 
+        {/* Cards */}
         {!isFormOpen && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -219,10 +221,8 @@ export default function LanguagePage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative group"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 to-pink-400/20 rounded-2xl blur opacity-30" />
-                <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-12 text-center">
+                <div className="relative bg-card/95 border border-border rounded-2xl p-12 text-center">
                   <Globe className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                   <h3 className="text-xl font-semibold text-foreground mb-2">
                     No languages added yet
@@ -232,7 +232,7 @@ export default function LanguagePage() {
                   </p>
                   <Button
                     onClick={() => setIsFormOpen(true)}
-                    className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white"
+                    className="bg-primary text-white"
                   >
                     <Plus className="w-5 h-5 mr-2" />
                     Add Your First Language

@@ -26,31 +26,24 @@ type SkillEntry = {
 
 export default function SkillPage() {
   const [skills, setSkills] = useState<SkillEntry[]>([]);
-
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<SkillEntry | null>(null);
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  // Fetch education data from server on component mount
   useEffect(() => {
     const fetchSkills = async () => {
       try {
         const data: any = await getSkills();
-        if (data.success) {
-          setSkills(data.data);
-        } else {
-          toast.error(data.error || "Failed to fetch skill entries");
-        }
-      } catch (error) {
-        console.error(error);
+        if (data.success) setSkills(data.data);
+        else toast.error(data.error || "Failed to fetch skills");
+      } catch {
         toast.error("Something went wrong while fetching skills");
       } finally {
         setLoading(false);
       }
     };
-
     fetchSkills();
   }, []);
 
@@ -58,9 +51,7 @@ export default function SkillPage() {
     try {
       let res: any;
       if (editingSkill) {
-        res = await updateSkill(editingSkill.id, {
-          ...data,
-        });
+        res = await updateSkill(editingSkill.id, data);
         if (res.success) {
           setSkills((prev) =>
             prev.map((skill) =>
@@ -69,23 +60,16 @@ export default function SkillPage() {
           );
           setHighlightedId(editingSkill.id);
           toast.success("Skill updated successfully");
-        } else {
-          toast.error(res.error);
-        }
+        } else toast.error(res.error);
       } else {
-        res = await createSkill({
-          ...data,
-        });
+        res = await createSkill(data);
         if (res.success) {
           setSkills((prev) => [res.data, ...prev]);
           setHighlightedId(res.data.id);
           toast.success("Skill added successfully");
-        } else {
-          toast.error(res.error);
-        }
+        } else toast.error(res.error);
       }
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setIsFormOpen(false);
@@ -101,11 +85,8 @@ export default function SkillPage() {
       if (res.success) {
         setSkills((prev) => prev.filter((skill) => skill.id !== id));
         toast.success("Skill deleted successfully");
-      } else {
-        toast.error(res.error);
-      }
-    } catch (error) {
-      console.error(error);
+      } else toast.error(res.error);
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setDeletingIds((prev) => {
@@ -130,6 +111,7 @@ export default function SkillPage() {
     <>
       <ThreeBackground />
       <div className="space-y-6">
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -150,15 +132,15 @@ export default function SkillPage() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 onClick={() => setIsFormOpen(true)}
-                className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-primary text-white font-medium shadow-lg hover:shadow-xl flex items-center gap-2"
               >
-                <Plus className="w-5 h-5 mr-2" />
-                Add Skill
+                <Plus className="w-5 h-5" /> Add Skill
               </Button>
             </motion.div>
           )}
         </motion.div>
 
+        {/* Skill Form */}
         <AnimatePresence mode="wait">
           {isFormOpen && (
             <motion.div
@@ -183,6 +165,7 @@ export default function SkillPage() {
           )}
         </AnimatePresence>
 
+        {/* Skill List */}
         {!isFormOpen && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -192,31 +175,27 @@ export default function SkillPage() {
           >
             {loading ? (
               <div className="flex justify-center items-center h-40">
-                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-t-primary border-r-transparent border-b-primary border-l-transparent rounded-full animate-spin" />
               </div>
             ) : skills.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative group"
+                className="bg-card border border-border rounded-2xl p-12 text-center"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 to-pink-400/20 rounded-2xl blur opacity-30" />
-                <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-12 text-center">
-                  <Star className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    No skills added yet
-                  </h3>
-                  <p className="text-muted-foreground mb-6">
-                    Start by adding your skills and ratings
-                  </p>
-                  <Button
-                    onClick={() => setIsFormOpen(true)}
-                    className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white"
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Add Your First Skill
-                  </Button>
-                </div>
+                <Star className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <h3 className="text-xl font-semibold text-foreground mb-2">
+                  No skills added yet
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  Start by adding your skills and ratings
+                </p>
+                <Button
+                  onClick={() => setIsFormOpen(true)}
+                  className="bg-primary text-white font-medium shadow hover:shadow-md flex items-center gap-2"
+                >
+                  <Plus className="w-5 h-5" /> Add Your First Skill
+                </Button>
               </motion.div>
             ) : (
               skills.map((skill, index) => (

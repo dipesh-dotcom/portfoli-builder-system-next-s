@@ -61,42 +61,23 @@ export function LanguageCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Card Glow */}
-      <div className="absolute -inset-0.5 rounded-xl blur opacity-0 group-hover:opacity-60 transition duration-700 bg-gradient-to-r from-indigo-500 via-pink-400 to-indigo-500 animate-gradient-xy" />
-
-      {/* Mouse radial hover */}
-      {isHovered && (
-        <motion.div
-          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{
-            background: `radial-gradient(600px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(99,102,241,0.15), transparent 40%)`,
-          }}
-        />
-      )}
-
-      {/* Card Container */}
+      {/* Flat card, no gradient */}
       <div
-        className={`relative bg-card/95 backdrop-blur-xl border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-primary/20 ${
-          isHighlighted ? "ring-2 ring-indigo-400" : ""
+        className={`relative bg-card/95 backdrop-blur-xl border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-all duration-500 group-hover:shadow-md ${
+          isHighlighted ? "ring-2 ring-primary/50" : ""
         }`}
       >
-        {/* Animated Gradient Overlay */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-primary/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-        </div>
-
         <div className="relative p-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           {/* Language Info */}
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-3">
               {/* Icon */}
               <motion.div
-                className="p-1.5 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg relative overflow-hidden"
+                className="p-1.5 bg-muted rounded-lg"
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 to-secondary/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <Globe className="w-5 h-5 text-primary relative z-10" />
+                <Globe className="w-5 h-5 text-primary" />
               </motion.div>
 
               {/* Name & Proficiency */}
@@ -110,7 +91,7 @@ export function LanguageCard({
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: index * 0.1 + 0.3 }}
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <Sparkles className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </motion.div>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
@@ -122,10 +103,10 @@ export function LanguageCard({
               </div>
             </div>
 
-            {/* Progress Bar */}
+            {/* Progress Bar (flat color) */}
             <div className="w-full h-0.5 bg-border rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-indigo-500 to-pink-400"
+                className="h-full bg-primary"
                 initial={{ width: 0 }}
                 animate={{ width: "100%" }}
                 transition={{
@@ -148,10 +129,9 @@ export function LanguageCard({
                 variant="ghost"
                 size="icon"
                 onClick={onEdit}
-                className="h-8 w-8 relative overflow-hidden group"
+                className="h-8 w-8"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                <Edit className="w-3.5 h-3.5 relative z-10" />
+                <Edit className="w-3.5 h-3.5" />
               </Button>
             </motion.div>
 
@@ -164,13 +144,12 @@ export function LanguageCard({
                 variant="ghost"
                 size="icon"
                 onClick={onDelete}
-                className="h-8 w-8 relative overflow-hidden group"
+                className="h-8 w-8"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-destructive/0 via-destructive/20 to-destructive/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                 {loading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin text-destructive" />
                 ) : (
-                  <Trash2 className="w-3.5 h-3.5 relative z-10" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 )}
               </Button>
             </motion.div>

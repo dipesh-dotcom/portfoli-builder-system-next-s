@@ -60,10 +60,8 @@ export function Navbar() {
             <motion.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.6 }}
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-400 dark:from-indigo-400 dark:to-pink-300 flex items-center justify-center"
-            >
-              <span className="text-white font-bold text-xl">P</span>
-            </motion.div>
+              className="w-10 h-10 rounded-xl bg-linear-to-br indigo-500 dark:indigo-400 flex items-center justify-center"
+            ></motion.div>
             <span className="text-xl font-bold text-gray-900 dark:text-gray-50 hidden sm:block">
               Port
               <span className="text-indigo-500 dark:text-indigo-400">

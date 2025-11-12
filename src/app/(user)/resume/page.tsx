@@ -78,21 +78,31 @@ export default function ResumePage() {
 
   return (
     <div className="space-y-6">
-      <Button onClick={generateResume} className="bg-blue-500 text-white">
-        <Plus className="w-5 h-5 mr-2" /> Generate Resume
+      {/* Generate Button */}
+      <Button
+        onClick={generateResume}
+        className="bg-primary text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+      >
+        <Plus className="w-5 h-5" /> Generate Resume
       </Button>
 
+      {/* Generated Resumes */}
       <div className="grid gap-4">
         {resumes.map((url, idx) => (
           <div
             key={idx}
-            className="flex items-center justify-between border p-4 rounded-lg"
+            className="flex items-center justify-between bg-card border border-border rounded-lg p-4"
           >
-            <FileText className="w-6 h-6 text-gray-700" />
-            <span>Resume {idx + 1}</span>
+            <div className="flex items-center gap-2">
+              <FileText className="w-6 h-6 text-foreground" />
+              <span className="text-foreground font-medium">
+                Resume {idx + 1}
+              </span>
+            </div>
+
             <Button
               onClick={() => downloadResume(url)}
-              className="bg-green-500 text-white flex items-center gap-2"
+              className="bg-primary text-white font-medium shadow hover:shadow-md flex items-center gap-2"
             >
               <Download className="w-4 h-4" /> Download
             </Button>

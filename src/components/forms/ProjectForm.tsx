@@ -57,10 +57,8 @@ export function ProjectForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Handle initial preview URL from string or File
   useEffect(() => {
     if (!initialData?.preview_image) return;
-
     if (typeof initialData.preview_image === "string") {
       setPreviewUrl(initialData.preview_image);
     } else if (initialData.preview_image instanceof File) {
@@ -92,7 +90,7 @@ export function ProjectForm({
     const file = e.target.files?.[0];
     if (file) {
       setPreviewUrl(URL.createObjectURL(file));
-      form.setValue("preview_image", file); // Update react-hook-form value
+      form.setValue("preview_image", file);
     } else {
       setPreviewUrl(null);
       form.setValue("preview_image", null);
@@ -106,9 +104,8 @@ export function ProjectForm({
       transition={{ duration: 0.5 }}
       className="w-full max-w-2xl mx-auto"
     >
-      <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
-
+      <div className="relative">
+        {/* Gradient removed */}
         <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-6 md:p-8 shadow-2xl">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -137,93 +134,65 @@ export function ProjectForm({
               onSubmit={form.handleSubmit(handleSubmit)}
               className="space-y-6"
             >
-              {/* Project Title */}
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-foreground flex items-center gap-2">
-                      <Code className="w-4 h-4 text-muted-foreground" />
-                      Project Title
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="My Awesome Project"
-                        className="bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 transition-all"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Description */}
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-foreground flex items-center gap-2">
-                      <Code className="w-4 h-4 text-muted-foreground" />
-                      Description
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Describe your project..."
-                        className="bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 transition-all resize-none"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* GitHub URL */}
-              <FormField
-                control={form.control}
-                name="github_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-foreground flex items-center gap-2">
-                      <Code className="w-4 h-4 text-muted-foreground" />
-                      GitHub URL
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://github.com/username/project"
-                        className="bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 transition-all"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Demo URL */}
-              <FormField
-                control={form.control}
-                name="demo_url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-foreground flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                      Demo URL
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="https://demo.com/project"
-                        className="bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 transition-all"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {[
+                {
+                  name: "title",
+                  label: "Project Title",
+                  placeholder: "My Awesome Project",
+                  icon: <Code className="w-4 h-4 text-muted-foreground" />,
+                },
+                {
+                  name: "description",
+                  label: "Description",
+                  placeholder: "Describe your project...",
+                  icon: <Code className="w-4 h-4 text-muted-foreground" />,
+                  isTextarea: true,
+                },
+                {
+                  name: "github_url",
+                  label: "GitHub URL",
+                  placeholder: "https://github.com/username/project",
+                  icon: <Code className="w-4 h-4 text-muted-foreground" />,
+                },
+                {
+                  name: "demo_url",
+                  label: "Demo URL",
+                  placeholder: "https://demo.com/project",
+                  icon: (
+                    <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                  ),
+                },
+              ].map(({ name, label, placeholder, icon, isTextarea }) => (
+                <FormField
+                  key={name}
+                  control={form.control}
+                  name={name as keyof ProjectFormValues}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-foreground flex items-center gap-2">
+                        {icon}
+                        {label}
+                      </FormLabel>
+                      <FormControl>
+                        {isTextarea ? (
+                          <Textarea
+                            placeholder={placeholder}
+                            className="bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 transition-all resize-none"
+                            {...field}
+                          />
+                        ) : (
+                          <Input
+                            placeholder={placeholder}
+                            className="bg-muted/30 border-border text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-primary/20 transition-all"
+                            {...field}
+                          />
+                        )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
 
               {/* Preview Image */}
               <FormField
@@ -256,16 +225,11 @@ export function ProjectForm({
               />
 
               {/* Buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="flex flex-col sm:flex-row gap-3 pt-4"
-              >
+              <div className="flex flex-col sm:flex-row gap-3 pt-4">
                 <Button
                   type="submit"
                   disabled={isSubmitting || isLoading}
-                  className="flex-1 bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed group"
+                  className="flex-1 bg-primary text-white font-medium transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting || isLoading ? (
                     "Saving..."
@@ -282,13 +246,12 @@ export function ProjectForm({
                     variant="outline"
                     onClick={onCancel}
                     disabled={isSubmitting || isLoading}
-                    className="flex-1 sm:flex-none bg-card border-border hover:bg-muted hover:border-destructive/30 text-foreground transition-all duration-300 hover:scale-[1.02]"
+                    className="flex-1 sm:flex-none bg-card border-border hover:bg-muted transition-all duration-300"
                   >
-                    <X className="w-5 h-5 mr-2" />
-                    Cancel
+                    <X className="w-5 h-5 mr-2" /> Cancel
                   </Button>
                 )}
-              </motion.div>
+              </div>
             </motion.form>
           </Form>
         </div>

@@ -36,7 +36,6 @@ export default function ExperiencePage() {
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
 
-  // Fetch experience data from server on component mount
   useEffect(() => {
     const fetchExperiences = async () => {
       try {
@@ -57,65 +56,61 @@ export default function ExperiencePage() {
     fetchExperiences();
   }, []);
 
-  // Handle Add/Edit Submit
-  const handleSubmit = (data: {
+  const handleSubmit = async (data: {
     companyName: string;
     position: string;
     startYear: string;
     endYear: string;
     description?: string;
   }) => {
-    (async () => {
-      try {
-        let res: any;
+    try {
+      let res: any;
 
-        if (editingExperience) {
-          res = await updateExperience(editingExperience.id, {
-            ...data,
-            startYear: Number(data.startYear),
-            endYear: Number(data.endYear),
-            description: data.description ?? "",
-          });
+      if (editingExperience) {
+        res = await updateExperience(editingExperience.id, {
+          ...data,
+          startYear: Number(data.startYear),
+          endYear: Number(data.endYear),
+          description: data.description ?? "",
+        });
 
-          if (res.success) {
-            setExperiences((prev) =>
-              prev.map((exp) =>
-                exp.id === editingExperience.id ? res.data : exp
-              )
-            );
-            setHighlightedId(editingExperience.id);
-            toast.success("Experience updated successfully");
-          } else {
-            toast.error(res.error);
-          }
+        if (res.success) {
+          setExperiences((prev) =>
+            prev.map((exp) =>
+              exp.id === editingExperience.id ? res.data : exp
+            )
+          );
+          setHighlightedId(editingExperience.id);
+          toast.success("Experience updated successfully");
         } else {
-          res = await createExperience({
-            ...data,
-            startYear: Number(data.startYear),
-            endYear: Number(data.endYear),
-            description: data.description ?? "",
-          });
-
-          if (res.success) {
-            setExperiences((prev) => [res.data, ...prev]);
-            setHighlightedId(res.data.id);
-            toast.success("Experience added successfully");
-          } else {
-            toast.error(res.error);
-          }
+          toast.error(res.error);
         }
-      } catch (error) {
-        console.error(error);
-        toast.error("Something went wrong");
-      } finally {
-        setIsFormOpen(false);
-        setEditingExperience(null);
-        setTimeout(() => setHighlightedId(null), 3000);
+      } else {
+        res = await createExperience({
+          ...data,
+          startYear: Number(data.startYear),
+          endYear: Number(data.endYear),
+          description: data.description ?? "",
+        });
+
+        if (res.success) {
+          setExperiences((prev) => [res.data, ...prev]);
+          setHighlightedId(res.data.id);
+          toast.success("Experience added successfully");
+        } else {
+          toast.error(res.error);
+        }
       }
-    })();
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong");
+    } finally {
+      setIsFormOpen(false);
+      setEditingExperience(null);
+      setTimeout(() => setHighlightedId(null), 3000);
+    }
   };
 
-  // Handle Delete
   const handleDelete = async (id: string) => {
     setDeletingIds((prev) => new Set(prev).add(id));
     try {
@@ -174,7 +169,7 @@ export default function ExperiencePage() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 onClick={() => setIsFormOpen(true)}
-                className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-primary text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Add Experience
@@ -227,9 +222,7 @@ export default function ExperiencePage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="relative group"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 to-pink-400/20 rounded-2xl blur opacity-30" />
                 <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-12 text-center">
                   <Briefcase className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                   <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -240,7 +233,7 @@ export default function ExperiencePage() {
                   </p>
                   <Button
                     onClick={() => setIsFormOpen(true)}
-                    className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white"
+                    className="bg-primary text-white"
                   >
                     <Plus className="w-5 h-5 mr-2" />
                     Add Your First Experience

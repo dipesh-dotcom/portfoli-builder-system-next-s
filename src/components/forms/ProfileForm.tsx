@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -53,27 +52,14 @@ export function ProfileForm({
   const validate = (): boolean => {
     const newErrors: Partial<Record<keyof ProfileFormValues, string>> = {};
 
-    if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
-    }
-
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    if (!formData.name.trim()) newErrors.name = "Name is required";
+    if (!formData.email.trim()) newErrors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
       newErrors.email = "Invalid email format";
-    }
-
-    if (!formData.bio.trim()) {
-      newErrors.bio = "Bio is required";
-    }
-
-    if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
-    }
-
-    if (!formData.occupation.trim()) {
+    if (!formData.bio.trim()) newErrors.bio = "Bio is required";
+    if (!formData.location.trim()) newErrors.location = "Location is required";
+    if (!formData.occupation.trim())
       newErrors.occupation = "Occupation is required";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -81,9 +67,7 @@ export function ProfileForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      onSubmit(formData);
-    }
+    if (validate()) onSubmit(formData);
   };
 
   return (
@@ -91,91 +75,55 @@ export function ProfileForm({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      className="relative group"
+      className="relative"
     >
-      <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 via-pink-400 to-indigo-500 rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-500 animate-gradient-xy" />
-
-      <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-
-        <form onSubmit={handleSubmit} className="relative p-6 space-y-6">
+      {/* Gradient removed */}
+      <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl overflow-hidden p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label
-                htmlFor="name"
-                className="text-sm font-medium text-foreground"
-              >
-                Full Name
-              </Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleChange("name", e.target.value)}
-                placeholder="John Doe"
-                className="bg-background/50 border-border focus:border-primary transition-colors"
-              />
-              {errors.name && (
-                <p className="text-xs text-destructive">{errors.name}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-foreground"
-              >
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleChange("email", e.target.value)}
-                placeholder="john@example.com"
-                className="bg-background/50 border-border focus:border-primary transition-colors"
-              />
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="location"
-                className="text-sm font-medium text-foreground"
-              >
-                Location
-              </Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => handleChange("location", e.target.value)}
-                placeholder="San Francisco, CA"
-                className="bg-background/50 border-border focus:border-primary transition-colors"
-              />
-              {errors.location && (
-                <p className="text-xs text-destructive">{errors.location}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="occupation"
-                className="text-sm font-medium text-foreground"
-              >
-                Occupation
-              </Label>
-              <Input
-                id="occupation"
-                value={formData.occupation}
-                onChange={(e) => handleChange("occupation", e.target.value)}
-                placeholder="Software Engineer"
-                className="bg-background/50 border-border focus:border-primary transition-colors"
-              />
-              {errors.occupation && (
-                <p className="text-xs text-destructive">{errors.occupation}</p>
-              )}
-            </div>
+            {[
+              { id: "name", label: "Full Name", placeholder: "John Doe" },
+              {
+                id: "email",
+                label: "Email Address",
+                placeholder: "john@example.com",
+                type: "email",
+              },
+              {
+                id: "location",
+                label: "Location",
+                placeholder: "San Francisco, CA",
+              },
+              {
+                id: "occupation",
+                label: "Occupation",
+                placeholder: "Software Engineer",
+              },
+            ].map(({ id, label, placeholder, type }) => (
+              <div key={id} className="space-y-2">
+                <Label
+                  htmlFor={id}
+                  className="text-sm font-medium text-foreground"
+                >
+                  {label}
+                </Label>
+                <Input
+                  id={id}
+                  type={type || "text"}
+                  value={formData[id as keyof ProfileFormValues]}
+                  onChange={(e) =>
+                    handleChange(id as keyof ProfileFormValues, e.target.value)
+                  }
+                  placeholder={placeholder}
+                  className="bg-background/50 border-border focus:border-primary transition-colors"
+                />
+                {errors[id as keyof ProfileFormValues] && (
+                  <p className="text-xs text-destructive">
+                    {errors[id as keyof ProfileFormValues]}
+                  </p>
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="space-y-2">
@@ -207,7 +155,7 @@ export function ProfileForm({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                className="w-full bg-primary text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 {isLoading ? (
                   <>

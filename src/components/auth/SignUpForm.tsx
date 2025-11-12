@@ -55,188 +55,137 @@ export function SignUpForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="w-full max-w-md mx-4 relative z-10"
+      className="w-full max-w-md mx-auto"
     >
-      {/* Outer card glow */}
-      <div className="relative group">
-        <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-500 to-pink-400 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200" />
+      <div className="bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-md hover:shadow-lg transition-shadow duration-300">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Create an account
+          </h1>
+          <p className="text-muted-foreground">
+            Get started with your free account
+          </p>
+        </div>
 
-        {/* Inner card */}
-        <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-8 shadow-2xl">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <motion.h1
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-3xl font-bold text-foreground mb-2"
-            >
-              Create an account
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-muted-foreground"
-            >
-              Get started with your free account
-            </motion.p>
+        {/* Social login buttons */}
+        <div className="space-y-3 mb-6">
+          <GoogleAuthButton />
+          <GithubAuthButton />
+        </div>
+
+        {/* Divider */}
+        <div className="relative mb-6 flex items-center">
+          <div className="flex-grow border-t border-border" />
+          <span className="px-4 text-sm text-muted-foreground">
+            Or continue with email
+          </span>
+          <div className="flex-grow border-t border-border" />
+        </div>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Full Name */}
+          <div className="space-y-2">
+            <Label htmlFor="name" className="text-foreground font-semibold">
+              Full name <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                id="name"
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
+                required
+              />
+            </div>
           </div>
 
-          {/* Social buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="space-y-3 mb-6"
-          >
-            <GoogleAuthButton />
-            <GithubAuthButton />
-          </motion.div>
-
-          {/* Divider */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="relative mb-6"
-          >
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
+          {/* Email */}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-foreground font-semibold">
+              Email address <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
+                required
+              />
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-card text-muted-foreground">
-                Or continue with email
-              </span>
+          </div>
+
+          {/* Password */}
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-foreground font-semibold">
+              Password <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
+                required
+                minLength={8}
+              />
             </div>
-          </motion.div>
-
-          {/* Sign Up Form */}
-          <motion.form
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            onSubmit={handleSubmit}
-            className="space-y-4"
-          >
-            {/* Full Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-foreground font-semibold">
-                Full name <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="John Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground font-semibold">
-                Email address <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-foreground font-semibold"
-              >
-                Password <span className="text-destructive">*</span>
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-card text-foreground placeholder:text-muted-foreground border border-border focus:border-primary focus:ring-primary/20 transition-all"
-                  required
-                  minLength={8}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Must be at least 8 characters
-              </p>
-            </div>
-
-            {/* Submit button */}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-4 rounded transition-all duration-200 mt-6 flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
-            >
-              {isLoading ? "Creating account..." : "Create account"}
-            </Button>
-          </motion.form>
-
-          {/* Footer */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="mt-6 text-center"
-          >
-            <p className="text-muted-foreground text-sm">
-              Already have an account?{" "}
-              <Link
-                href="/sign-in"
-                className="text-primary hover:text-primary/80 font-medium transition-colors underline"
-              >
-                Sign in
-              </Link>
+            <p className="text-xs text-muted-foreground">
+              Must be at least 8 characters
             </p>
-          </motion.div>
+          </div>
 
-          {/* Terms */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="mt-6 text-center text-xs text-muted-foreground"
+          {/* Submit button */}
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 px-4 rounded transition-all duration-200 flex items-center justify-center gap-2 shadow-md disabled:opacity-50"
           >
-            By continuing, you agree to our{" "}
+            {isLoading ? "Creating account..." : "Create account"}
+          </Button>
+        </form>
+
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-muted-foreground text-sm">
+            Already have an account?{" "}
             <Link
-              href="/terms"
-              className="underline hover:text-foreground transition-colors"
+              href="/sign-in"
+              className="text-primary hover:text-primary/80 font-medium transition-colors underline"
             >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="underline hover:text-foreground transition-colors"
-            >
-              Privacy Policy
+              Sign in
             </Link>
-          </motion.p>
+          </p>
         </div>
+
+        {/* Terms */}
+        <p className="mt-6 text-center text-xs text-muted-foreground">
+          By continuing, you agree to our{" "}
+          <Link
+            href="/terms"
+            className="underline hover:text-foreground transition-colors"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className="underline hover:text-foreground transition-colors"
+          >
+            Privacy Policy
+          </Link>
+        </p>
       </div>
     </motion.div>
   );
