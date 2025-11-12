@@ -17,8 +17,6 @@ export async function createAchievement(data: AchievementData) {
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
 
-    let user = await prisma.user.findUnique({ where: { id: userId } });
-
     const achievement = await prisma.achievement.create({
       data: {
         userId: userId,

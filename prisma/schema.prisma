@@ -34,6 +34,7 @@ model User {
   achievements Achievement[]
   skills       Skill[]
   languages    Language[]
+  projects     Project[]
 
   @@map("users")
 }
@@ -154,4 +155,21 @@ model Language {
 
   @@index([userId])
   @@map("languages")
+}
+
+model Project {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  title         String
+  description   String
+  github_url    String?
+  demo_url      String?
+  preview_image String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("projects")
 }

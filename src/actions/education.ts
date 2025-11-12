@@ -17,8 +17,6 @@ export async function createEducation(data: EducationData) {
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
 
-    let user = await prisma.user.findUnique({ where: { id: userId } });
-
     const education = await prisma.education.create({
       data: {
         userId: userId,
