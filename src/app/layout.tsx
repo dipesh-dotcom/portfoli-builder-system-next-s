@@ -10,6 +10,7 @@ import Loader from "./loading";
 import { Toaster } from "react-hot-toast";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "Portfolio Builder System",
@@ -45,7 +46,9 @@ export default async function RootLayout({
           className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}
         >
           <NavbarWrapper />
-          <Suspense fallback={<Loader />}>{children}</Suspense>
+          <Suspense fallback={<Loader />}>
+            {children} <SpeedInsights />
+          </Suspense>
           <Analytics />
         </body>
       </html>
