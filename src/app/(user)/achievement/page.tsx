@@ -14,6 +14,7 @@ import {
   deleteAchievement,
   getAchievements,
 } from "@/actions/achievement";
+import Loader from "@/components/loader/Loader";
 
 type AchievementEntry = {
   id: string;
@@ -200,9 +201,7 @@ export default function AchievementPage() {
             className="grid gap-4"
           >
             {loading ? (
-              <div className="flex justify-center items-center h-40">
-                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
-              </div>
+              <Loader size="lg" />
             ) : achievements.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}

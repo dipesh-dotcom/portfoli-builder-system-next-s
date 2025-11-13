@@ -11,6 +11,8 @@ import { Toaster } from "react-hot-toast";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import GlobalLoader from "@/components/loader/GlobalLoader";
+import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {
   title: "Portfolio Builder System",
@@ -45,11 +47,17 @@ export default async function RootLayout({
         <body
           className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}
         >
+          <NextTopLoader
+            color="#2563eb" // Progress bar color
+            height={3} // Height of the bar
+            showSpinner={false} // Optional spinner
+            speed={400} // Speed of animation
+          />
+
           <NavbarWrapper />
-          <Suspense fallback={<Loader />}>
-            {children} <SpeedInsights />
-          </Suspense>
+          <Suspense fallback={<Loader />}>{children}</Suspense>
           <Analytics />
+          <SpeedInsights />
         </body>
       </html>
       <Toaster />

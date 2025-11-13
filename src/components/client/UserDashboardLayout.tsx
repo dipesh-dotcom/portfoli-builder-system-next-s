@@ -71,9 +71,9 @@ export function UserDashboardLayout({
     { name: "Experience", icon: Briefcase, href: "/experience" },
     { name: "Project", icon: FolderKanban, href: "/project" },
     { name: "Achievement", icon: Award, href: "/achievement" },
-    { name: "Resume", icon: FileText, href: "/resume" },
     { name: "Skill", icon: Wrench, href: "/skill" },
     { name: "Language", icon: Languages, href: "/language" },
+    { name: "Resume", icon: FileText, href: "/resume" },
   ];
 
   const titleMap: Record<string, string> = Object.fromEntries(
