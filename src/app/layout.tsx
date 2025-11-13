@@ -11,7 +11,6 @@ import { Toaster } from "react-hot-toast";
 import { SessionProvider } from "next-auth/react";
 import { auth } from "@/lib/auth";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import GlobalLoader from "@/components/loader/GlobalLoader";
 import NextTopLoader from "nextjs-toploader";
 
 export const metadata: Metadata = {

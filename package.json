@@ -37,6 +37,7 @@
     "nextjs-toploader": "^3.9.17",
     "nodemailer": "^7.0.10",
     "nprogress": "^0.2.0",
+    "portfolio-builder-project": "link:",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.65.0",
