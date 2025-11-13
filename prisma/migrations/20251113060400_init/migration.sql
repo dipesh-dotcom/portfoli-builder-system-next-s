@@ -66,6 +66,19 @@ CREATE TABLE "PasswordResetToken" (
 );
 
 -- CreateTable
+CREATE TABLE "UserProfile" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "bio" TEXT,
+    "location" TEXT,
+    "occupation" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "UserProfile_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "educations" (
     "id" UUID NOT NULL,
     "userId" UUID NOT NULL,
@@ -129,6 +142,21 @@ CREATE TABLE "languages" (
     CONSTRAINT "languages_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "projects" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "github_url" TEXT,
+    "demo_url" TEXT,
+    "preview_image" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "projects_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -162,11 +190,17 @@ CREATE INDEX "skills_userId_idx" ON "skills"("userId");
 -- CreateIndex
 CREATE INDEX "languages_userId_idx" ON "languages"("userId");
 
+-- CreateIndex
+CREATE INDEX "projects_userId_idx" ON "projects"("userId");
+
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UserProfile" ADD CONSTRAINT "UserProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "educations" ADD CONSTRAINT "educations_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -182,3 +216,6 @@ ALTER TABLE "skills" ADD CONSTRAINT "skills_userId_fkey" FOREIGN KEY ("userId") 
 
 -- AddForeignKey
 ALTER TABLE "languages" ADD CONSTRAINT "languages_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "projects" ADD CONSTRAINT "projects_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

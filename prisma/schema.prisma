@@ -35,6 +35,7 @@ model User {
   skills       Skill[]
   languages    Language[]
   projects     Project[]
+  profile      UserProfile?
 
   @@map("users")
 }
@@ -81,6 +82,18 @@ model PasswordResetToken {
   token     String   @unique
   expires   DateTime
   createdAt DateTime @default(now())
+}
+
+model UserProfile {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @unique @db.Uuid
+  user        User     @relation(fields: [userId], references: [id])
+  bio         String?
+  location    String?
+  occupation  String?
+  joined_date DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Education {
