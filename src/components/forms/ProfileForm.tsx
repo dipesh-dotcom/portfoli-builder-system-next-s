@@ -99,7 +99,7 @@ export function ProfileForm({
             className="space-y-6"
           >
             {["name", "email", "location", "occupation"].map((field) => {
-              const labelIcons: Record<string, JSX.Element> = {
+              const labelIcons: Record<string, React.ReactNode> = {
                 name: <UserCircle className="w-4 h-4 text-muted-foreground" />,
                 email: <Mail className="w-4 h-4 text-muted-foreground" />,
                 location: <MapPin className="w-4 h-4 text-muted-foreground" />,
