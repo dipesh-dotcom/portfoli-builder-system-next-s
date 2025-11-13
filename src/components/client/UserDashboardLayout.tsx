@@ -211,14 +211,6 @@ export function UserDashboardLayout({
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-full border border-transparent hover:bg-primary/10 hover:scale-110 hover:shadow-md transition-all duration-200"
-            >
-              <User className="h-5 w-5" />
-            </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
               onClick={handleLogout}
               className="rounded-full border border-transparent hover:bg-primary/10 hover:scale-110 hover:shadow-md transition-all duration-200 flex items-center gap-1"
             >
