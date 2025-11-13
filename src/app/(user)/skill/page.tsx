@@ -14,6 +14,7 @@ import {
   deleteSkill,
   getSkills,
 } from "@/actions/skill";
+import ConfirmDialog from "@/components/cards/ConformationDialog";
 
 type SkillEntry = {
   id: string;
@@ -31,6 +32,10 @@ export default function SkillPage() {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+
+  // Confirm dialog state
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -78,12 +83,23 @@ export default function SkillPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setDeletingIds((prev) => new Set(prev).add(id));
+  // Open confirmation dialog
+  const openDeleteConfirm = (id: string) => {
+    setSelectedDeleteId(id);
+    setIsConfirmOpen(true);
+  };
+
+  // Confirm delete action
+  const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
+    setDeletingIds((prev) => new Set(prev).add(selectedDeleteId));
+
     try {
-      const res: any = await deleteSkill(id);
+      const res: any = await deleteSkill(selectedDeleteId);
       if (res.success) {
-        setSkills((prev) => prev.filter((skill) => skill.id !== id));
+        setSkills((prev) =>
+          prev.filter((skill) => skill.id !== selectedDeleteId)
+        );
         toast.success("Skill deleted successfully");
       } else toast.error(res.error);
     } catch {
@@ -91,9 +107,11 @@ export default function SkillPage() {
     } finally {
       setDeletingIds((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(id);
+        newSet.delete(selectedDeleteId);
         return newSet;
       });
+      setIsConfirmOpen(false);
+      setSelectedDeleteId(null);
     }
   };
 
@@ -203,7 +221,7 @@ export default function SkillPage() {
                   key={skill.id}
                   skill={skill}
                   onEdit={() => handleEdit(skill)}
-                  onDelete={() => handleDelete(skill.id)}
+                  onDelete={() => openDeleteConfirm(skill.id)}
                   index={index}
                   highlight={highlightedId === skill.id}
                   loading={deletingIds.has(skill.id)}
@@ -213,6 +231,17 @@ export default function SkillPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Confirm Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="Delete Skill"
+        message="Are you sure you want to delete this skill? This action cannot be undone."
+        onConfirm={confirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </>
   );
 }

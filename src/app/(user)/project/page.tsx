@@ -14,6 +14,7 @@ import {
   updateProject,
   deleteProject,
 } from "@/actions/projects";
+import ConfirmDialog from "@/components/cards/ConformationDialog";
 
 export default function ProjectPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -21,7 +22,11 @@ export default function ProjectPage() {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch projects from server on mount
+  // Dialog states
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
+
+  // Fetch projects
   useEffect(() => {
     async function fetchProjects() {
       setLoading(true);
@@ -34,6 +39,7 @@ export default function ProjectPage() {
     fetchProjects();
   }, []);
 
+  // Form submit handler
   const handleSubmit = async (data: ProjectData) => {
     try {
       if (editingProject) {
@@ -61,13 +67,23 @@ export default function ProjectPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const res = await deleteProject(id);
+  // Open confirmation dialog
+  const openDeleteConfirm = (id: string) => {
+    setSelectedDeleteId(id);
+    setIsConfirmOpen(true);
+  };
+
+  // Confirm delete handler
+  const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
+    const res = await deleteProject(selectedDeleteId);
     if (res.success) {
-      setProjects(projects.filter((proj) => proj.id !== id));
+      setProjects(projects.filter((proj) => proj.id !== selectedDeleteId));
     } else {
       console.error("Error deleting project:", res.error);
     }
+    setIsConfirmOpen(false);
+    setSelectedDeleteId(null);
   };
 
   const handleEdit = (project: Project) => {
@@ -98,7 +114,7 @@ export default function ProjectPage() {
               Projects
             </h1>
             <p className="text-muted-foreground mt-2">
-              Showcase your coding projects and add demo or GitHub links
+              Showcase your coding projects and add demo or GitHub links.
             </p>
           </div>
 
@@ -180,7 +196,7 @@ export default function ProjectPage() {
                   key={project.id}
                   project={project}
                   onEdit={() => handleEdit(project)}
-                  onDelete={() => handleDelete(project.id)}
+                  onDelete={() => openDeleteConfirm(project.id)}
                   index={index}
                 />
               ))
@@ -188,6 +204,17 @@ export default function ProjectPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="Delete Project"
+        message="Are you sure you want to delete this project? This action cannot be undone."
+        onConfirm={confirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </>
   );
 }

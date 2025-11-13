@@ -14,6 +14,7 @@ import {
   deleteLanguage,
   getLanguages,
 } from "@/actions/language";
+import ConfirmDialog from "@/components/cards/ConformationDialog";
 
 type LanguageEntry = {
   id: string;
@@ -33,6 +34,9 @@ export default function LanguagePage() {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  // Dialog states
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLanguages = async () => {
@@ -94,12 +98,21 @@ export default function LanguagePage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setDeletingIds((prev) => new Set(prev).add(id));
+  //  Confirmation dialog setup
+  const openDeleteConfirm = (id: string) => {
+    setSelectedDeleteId(id);
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
+    setDeletingIds((prev) => new Set(prev).add(selectedDeleteId));
     try {
-      const res: any = await deleteLanguage(id);
+      const res: any = await deleteLanguage(selectedDeleteId);
       if (res.success) {
-        setLanguages((prev) => prev.filter((lang) => lang.id !== id));
+        setLanguages((prev) =>
+          prev.filter((lang) => lang.id !== selectedDeleteId)
+        );
         toast.success("Language deleted successfully");
       } else {
         toast.error(res.error);
@@ -110,7 +123,7 @@ export default function LanguagePage() {
     } finally {
       setDeletingIds((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(id);
+        newSet.delete(selectedDeleteId);
         return newSet;
       });
     }
@@ -245,7 +258,7 @@ export default function LanguagePage() {
                   key={language.id}
                   language={language}
                   onEdit={() => handleEdit(language)}
-                  onDelete={() => handleDelete(language.id)}
+                  onDelete={() => openDeleteConfirm(language.id)}
                   index={index}
                   highlight={highlightedId === language.id}
                   loading={deletingIds.has(language.id)}
@@ -255,6 +268,17 @@ export default function LanguagePage() {
           </motion.div>
         )}
       </div>
+
+      {/*  Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="Delete Language"
+        message="Are you sure you want to delete this language record? This action cannot be undone."
+        onConfirm={confirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </>
   );
 }

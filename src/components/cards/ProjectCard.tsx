@@ -39,6 +39,33 @@ export function ProjectCard({
     >
       <Card className="hover:shadow-lg transition-all duration-300">
         <CardContent className="p-0 flex flex-col">
+          {/* Edit/Delete buttons inside image container */}
+          {(onEdit || onDelete) && (
+            <div className="absolute top-2 right-2 flex gap-2 z-20">
+              {onEdit && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onEdit(project)}
+                  aria-label="Edit project"
+                  className="h-8 w-8 hover:text-primary hover:bg-primary/10"
+                >
+                  <Edit className="w-4 h-4" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => onDelete(project)}
+                  aria-label="Delete project"
+                  className="h-8 w-8 hover:text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          )}
           {/* Image container with relative position */}
           <div className="relative w-full h-40 rounded-t-lg overflow-hidden bg-muted/30">
             {project.preview_image ? (

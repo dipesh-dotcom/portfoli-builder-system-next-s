@@ -15,6 +15,7 @@ import {
   getAchievements,
 } from "@/actions/achievement";
 import Loader from "@/components/loader/Loader";
+import ConfirmDialog from "@/components/cards/ConformationDialog";
 
 type AchievementEntry = {
   id: string;
@@ -34,6 +35,9 @@ export default function AchievementPage() {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
 
   // Fetch achievements on mount
   useEffect(() => {
@@ -102,12 +106,20 @@ export default function AchievementPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setDeletingIds((prev) => new Set(prev).add(id));
+  const openDeleteConfirm = (id: string) => {
+    setSelectedDeleteId(id);
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
+    setDeletingIds((prev) => new Set(prev).add(selectedDeleteId));
     try {
-      const res: any = await deleteAchievement(id);
+      const res: any = await deleteAchievement(selectedDeleteId);
       if (res.success) {
-        setAchievements((prev) => prev.filter((ach) => ach.id !== id));
+        setAchievements((prev) =>
+          prev.filter((ach) => ach.id !== selectedDeleteId)
+        );
         toast.success("Achievement deleted successfully");
       } else {
         toast.error(res.error);
@@ -118,9 +130,11 @@ export default function AchievementPage() {
     } finally {
       setDeletingIds((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(id);
+        newSet.delete(selectedDeleteId);
         return newSet;
       });
+      setSelectedDeleteId(null);
+      setIsConfirmOpen(false);
     }
   };
 
@@ -231,7 +245,7 @@ export default function AchievementPage() {
                   key={achievement.id}
                   achievement={achievement}
                   onEdit={() => handleEdit(achievement)}
-                  onDelete={() => handleDelete(achievement.id)}
+                  onDelete={() => openDeleteConfirm(achievement.id)}
                   index={index}
                   highlight={highlightedId === achievement.id}
                   loading={deletingIds.has(achievement.id)}
@@ -241,6 +255,17 @@ export default function AchievementPage() {
           </motion.div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="Delete Achievement"
+        message="Are you sure you want to delete this achievement? This action cannot be undone."
+        onConfirm={confirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </>
   );
 }

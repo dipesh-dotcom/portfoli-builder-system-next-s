@@ -14,6 +14,7 @@ import {
   deleteExperience,
   getExperiences,
 } from "@/actions/experience";
+import ConfirmDialog from "@/components/cards/ConformationDialog";
 
 type ExperienceEntry = {
   id: string;
@@ -35,6 +36,9 @@ export default function ExperiencePage() {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  // Dialog states
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExperiences = async () => {
@@ -110,13 +114,21 @@ export default function ExperiencePage() {
       setTimeout(() => setHighlightedId(null), 3000);
     }
   };
+  //  Confirmation dialog setup
+  const openDeleteConfirm = (id: string) => {
+    setSelectedDeleteId(id);
+    setIsConfirmOpen(true);
+  };
+  const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
 
-  const handleDelete = async (id: string) => {
-    setDeletingIds((prev) => new Set(prev).add(id));
+    setDeletingIds((prev) => new Set(prev).add(selectedDeleteId));
     try {
-      const res: any = await deleteExperience(id);
+      const res: any = await deleteExperience(selectedDeleteId);
       if (res.success) {
-        setExperiences((prev) => prev.filter((exp) => exp.id !== id));
+        setExperiences((prev) =>
+          prev.filter((exp) => exp.id !== selectedDeleteId)
+        );
         toast.success("Experience deleted successfully");
       } else {
         toast.error(res.error);
@@ -127,9 +139,11 @@ export default function ExperiencePage() {
     } finally {
       setDeletingIds((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(id);
+        newSet.delete(selectedDeleteId);
         return newSet;
       });
+      setSelectedDeleteId(null);
+      setIsConfirmOpen(false);
     }
   };
 
@@ -253,7 +267,7 @@ export default function ExperiencePage() {
                     description: experience.description,
                   }}
                   onEdit={() => handleEdit(experience)}
-                  onDelete={() => handleDelete(experience.id)}
+                  onDelete={() => openDeleteConfirm(experience.id)}
                   index={index}
                   highlight={highlightedId === experience.id}
                   loading={deletingIds.has(experience.id)}
@@ -263,6 +277,16 @@ export default function ExperiencePage() {
           </motion.div>
         )}
       </div>
+      {/*  Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="Delete Education"
+        message="Are you sure you want to delete this education record? This action cannot be undone."
+        onConfirm={confirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </>
   );
 }

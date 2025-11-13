@@ -14,6 +14,7 @@ import {
   deleteEducation,
   getEducations,
 } from "@/actions/education";
+import ConfirmDialog from "@/components/cards/ConformationDialog";
 
 type EducationEntry = {
   id: string;
@@ -34,6 +35,10 @@ export default function EducationPage() {
   const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+
+  // Dialog states
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchEducations = async () => {
@@ -102,12 +107,22 @@ export default function EducationPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setDeletingIds((prev) => new Set(prev).add(id));
+  //  Confirmation dialog setup
+  const openDeleteConfirm = (id: string) => {
+    setSelectedDeleteId(id);
+    setIsConfirmOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedDeleteId) return;
+
+    setDeletingIds((prev) => new Set(prev).add(selectedDeleteId));
     try {
-      const res: any = await deleteEducation(id);
+      const res: any = await deleteEducation(selectedDeleteId);
       if (res.success) {
-        setEducations((prev) => prev.filter((edu) => edu.id !== id));
+        setEducations((prev) =>
+          prev.filter((edu) => edu.id !== selectedDeleteId)
+        );
         toast.success("Education deleted successfully");
       } else {
         toast.error(res.error);
@@ -118,9 +133,11 @@ export default function EducationPage() {
     } finally {
       setDeletingIds((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(id);
+        newSet.delete(selectedDeleteId);
         return newSet;
       });
+      setSelectedDeleteId(null);
+      setIsConfirmOpen(false);
     }
   };
 
@@ -242,7 +259,7 @@ export default function EducationPage() {
                     endYear: education.endYear,
                   }}
                   onEdit={() => handleEdit(education)}
-                  onDelete={() => handleDelete(education.id)}
+                  onDelete={() => openDeleteConfirm(education.id)}
                   index={index}
                   highlight={highlightedId === education.id}
                   loading={deletingIds.has(education.id)}
@@ -252,6 +269,17 @@ export default function EducationPage() {
           </motion.div>
         )}
       </div>
+
+      {/*  Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        title="Delete Education"
+        message="Are you sure you want to delete this education record? This action cannot be undone."
+        onConfirm={confirmDelete}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </>
   );
 }
