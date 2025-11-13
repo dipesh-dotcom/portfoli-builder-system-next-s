@@ -106,7 +106,7 @@ export default function ProjectPage() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Button
                 onClick={() => setIsFormOpen(true)}
-                className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-primary hover:bg-primary/90 text-white font-medium shadow-md transition-all duration-300"
               >
                 <Plus className="w-5 h-5 mr-2" />
                 Add Project
@@ -157,7 +157,6 @@ export default function ProjectPage() {
               </p>
             ) : projects.length === 0 ? (
               <div className="relative group col-span-full">
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500/20 to-pink-400/20 rounded-2xl blur opacity-30" />
                 <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-12 text-center">
                   <FolderGit2 className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                   <h3 className="text-xl font-semibold text-foreground mb-2">
@@ -168,7 +167,7 @@ export default function ProjectPage() {
                   </p>
                   <Button
                     onClick={() => setIsFormOpen(true)}
-                    className="bg-gradient-to-r from-indigo-500 to-pink-400 hover:from-indigo-600 hover:to-pink-500 text-white"
+                    className="bg-primary hover:bg-primary/90 text-white"
                   >
                     <Plus className="w-5 h-5 mr-2" />
                     Add Your First Project
