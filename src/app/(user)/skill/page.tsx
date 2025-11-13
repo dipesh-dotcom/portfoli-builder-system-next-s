@@ -181,18 +181,18 @@ export default function SkillPage() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-card border border-border rounded-2xl p-12 text-center"
+                className="bg-card border border-border rounded-2xl p-12 text-center flex flex-col items-center justify-center gap-6"
               >
-                <Star className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-semibold text-foreground mb-2">
+                <Star className="w-16 h-16 text-muted-foreground opacity-50" />
+                <h3 className="text-xl font-semibold text-foreground">
                   No skills added yet
                 </h3>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-muted-foreground">
                   Start by adding your skills and ratings
                 </p>
                 <Button
                   onClick={() => setIsFormOpen(true)}
-                  className="bg-primary text-white font-medium shadow hover:shadow-md flex items-center gap-2"
+                  className="bg-primary text-white font-medium shadow hover:shadow-md flex justify-center items-center gap-2"
                 >
                   <Plus className="w-5 h-5" /> Add Your First Skill
                 </Button>

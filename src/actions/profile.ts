@@ -121,3 +121,33 @@ export async function uploadAvater(avatarUrl: string) {
     return { success: false, error: "Failed to update avatar" };
   }
 }
+
+export async function getProfileStats() {
+  const session = await auth();
+  if (!session?.user?.email) throw new Error("Unauthorized");
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        projects: true,
+        educations: true,
+        skills: true,
+      },
+    });
+
+    if (!user) return { success: false, error: "User not found" };
+
+    return {
+      success: true,
+      data: {
+        projects: user.projects.length,
+        education: user.educations.length,
+        skills: user.skills.length,
+      },
+    };
+  } catch (err) {
+    console.error("Error fetching stats:", err);
+    return { success: false, error: "Failed to fetch stats" };
+  }
+}

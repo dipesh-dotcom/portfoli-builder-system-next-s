@@ -8,7 +8,12 @@ import { ProfileForm } from "@/components/forms/ProfileForm";
 import { Button } from "@/components/ui/button";
 import { UserCircle, Edit } from "lucide-react";
 import { ProfileCard } from "@/components/cards/ProfileCard";
-import { getProfile, updateProfile, uploadAvater } from "@/actions/profile";
+import {
+  getProfile,
+  getProfileStats,
+  updateProfile,
+  uploadAvater,
+} from "@/actions/profile";
 import toast from "react-hot-toast";
 import { uploadcare } from "@/lib/uploadCare";
 
@@ -16,6 +21,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ projects: 0, education: 0, skills: 0 });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -26,6 +32,9 @@ export default function ProfilePage() {
         } else {
           console.error(res.error);
         }
+
+        const statsRes = await getProfileStats();
+        if (statsRes.success && statsRes.data) setStats(statsRes.data);
       } catch (error) {
         console.error("Error fetching profile:", error);
       } finally {
@@ -88,12 +97,6 @@ export default function ProfilePage() {
       console.error(error);
     }
   };
-
-  const stats = [
-    { label: "Projects", value: "24" },
-    { label: "Education", value: "3" },
-    { label: "Skills", value: "18" },
-  ];
 
   return (
     <>
@@ -161,25 +164,36 @@ export default function ProfilePage() {
             transition={{ delay: 0.2 }}
             className="space-y-6"
           >
-            {/* Profile Card */}
-            <ProfileCard profile={profile} onAvatarClick={handleAvatarClick} />
+            {loading ? (
+              <div className="flex justify-center items-center h-40">
+                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : (
+              <>
+                {/* Profile Card */}
+                <ProfileCard
+                  profile={profile}
+                  onAvatarClick={handleAvatarClick}
+                />
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="relative bg-card border border-border rounded-xl p-6"
-                >
-                  <p className="text-sm text-muted-foreground mb-1">
-                    {stat.label}
-                  </p>
-                  <p className="text-3xl font-bold text-foreground">
-                    {stat.value}
-                  </p>
+                {/* Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {Object.entries(stats).map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="relative bg-card border border-border rounded-xl p-6"
+                    >
+                      <p className="text-sm text-muted-foreground mb-1">
+                        {key.charAt(0).toUpperCase() + key.slice(1)}
+                      </p>
+                      <p className="text-3xl font-bold text-foreground">
+                        {value}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </motion.div>
         )}
       </div>
