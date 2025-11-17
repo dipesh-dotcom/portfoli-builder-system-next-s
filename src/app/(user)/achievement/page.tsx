@@ -215,7 +215,7 @@ export default function AchievementPage() {
             className="grid gap-4"
           >
             {loading ? (
-              <Loader size="lg" />
+              <Loader />
             ) : achievements.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}

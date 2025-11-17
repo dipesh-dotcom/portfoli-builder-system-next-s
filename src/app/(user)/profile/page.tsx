@@ -16,6 +16,7 @@ import {
 } from "@/actions/profile";
 import toast from "react-hot-toast";
 import { uploadcare } from "@/lib/uploadCare";
+import Loader from "@/components/loader/Loader";
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -166,7 +167,7 @@ export default function ProfilePage() {
           >
             {loading ? (
               <div className="flex justify-center items-center h-40">
-                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+                <Loader />
               </div>
             ) : (
               <>
