@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { cacheTag, revalidatePath, revalidateTag } from "next/cache";
 
 import { auth } from "@/lib/auth";
 
@@ -10,14 +10,24 @@ export type SkillData = {
   rating: number;
 };
 
+async function getCachedSkills(userId: string) {
+  "use cache";
+  cacheTag(`skills-${userId}`);
+
+  const skills = await prisma.skill.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return skills;
+}
+
 export async function createSkill(data: SkillData) {
   try {
     const session = await auth();
     const userId = session?.user?.id;
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
-
-    let user = await prisma.user.findUnique({ where: { id: userId } });
 
     const skill = await prisma.skill.create({
       data: {
@@ -26,7 +36,7 @@ export async function createSkill(data: SkillData) {
       },
     });
 
-    revalidatePath("/skill");
+    revalidateTag(`skills-${userId}`, "default");
 
     return { success: true, data: skill, statusCode: 201 };
   } catch (error) {
@@ -51,12 +61,8 @@ export async function getSkills() {
         statusCode: 401,
       };
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { skills: { orderBy: { rating: "desc" } } },
-    });
-
-    return { success: true, data: user?.skills || [], statusCode: 200 };
+    const skills = await getCachedSkills(userId);
+    return { success: true, data: skills || [], statusCode: 200 };
   } catch (error) {
     console.error("[Skill] Fetch error:", error);
     return {
@@ -90,7 +96,7 @@ export async function updateSkill(id: string, data: SkillData) {
       data,
     });
 
-    revalidatePath("/skill");
+    revalidateTag(`skills-${userId}`, "default");
 
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
@@ -123,7 +129,7 @@ export async function deleteSkill(id: string) {
 
     await prisma.skill.delete({ where: { id } });
 
-    revalidatePath("/skill");
+    revalidateTag(`skills-${userId}`, "default");
 
     return { success: true, statusCode: 200 };
   } catch (error) {

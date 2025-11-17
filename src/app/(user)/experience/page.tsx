@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/home/ThreeBackground";
@@ -15,6 +15,7 @@ import {
   getExperiences,
 } from "@/actions/experience";
 import ConfirmDialog from "@/components/cards/ConformationDialog";
+import Loader from "@/components/loader/Loader";
 
 type ExperienceEntry = {
   id: string;
@@ -256,22 +257,24 @@ export default function ExperiencePage() {
               </motion.div>
             ) : (
               experiences.map((experience, index) => (
-                <ExperienceCard
-                  key={experience.id}
-                  experience={{
-                    id: experience.id,
-                    companyName: experience.companyName,
-                    position: experience.position,
-                    startYear: experience.startYear,
-                    endYear: experience.endYear,
-                    description: experience.description,
-                  }}
-                  onEdit={() => handleEdit(experience)}
-                  onDelete={() => openDeleteConfirm(experience.id)}
-                  index={index}
-                  highlight={highlightedId === experience.id}
-                  loading={deletingIds.has(experience.id)}
-                />
+                <Suspense key={experience.id} fallback={<Loader />}>
+                  <ExperienceCard
+                    key={experience.id}
+                    experience={{
+                      id: experience.id,
+                      companyName: experience.companyName,
+                      position: experience.position,
+                      startYear: experience.startYear,
+                      endYear: experience.endYear,
+                      description: experience.description,
+                    }}
+                    onEdit={() => handleEdit(experience)}
+                    onDelete={() => openDeleteConfirm(experience.id)}
+                    index={index}
+                    highlight={highlightedId === experience.id}
+                    loading={deletingIds.has(experience.id)}
+                  />
+                </Suspense>
               ))
             )}
           </motion.div>

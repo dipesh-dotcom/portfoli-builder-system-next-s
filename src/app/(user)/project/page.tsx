@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, FolderGit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   deleteProject,
 } from "@/actions/projects";
 import ConfirmDialog from "@/components/cards/ConformationDialog";
+import Loader from "@/components/loader/Loader";
 
 export default function ProjectPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -168,9 +169,9 @@ export default function ProjectPage() {
             className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {loading ? (
-              <p className="col-span-full text-center text-muted-foreground">
-                Loading...
-              </p>
+              <div className="col-span-full text-center text-muted-foreground">
+                <Loader />
+              </div>
             ) : projects.length === 0 ? (
               <div className="relative group col-span-full">
                 <div className="relative bg-card/95 backdrop-blur-xl border border-border rounded-2xl p-12 text-center">
@@ -192,13 +193,15 @@ export default function ProjectPage() {
               </div>
             ) : (
               projects.map((project, index) => (
-                <ProjectCard
-                  key={project.id}
-                  project={project}
-                  onEdit={() => handleEdit(project)}
-                  onDelete={() => openDeleteConfirm(project.id)}
-                  index={index}
-                />
+                <Suspense key={project.id} fallback={<Loader />}>
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    onEdit={() => handleEdit(project)}
+                    onDelete={() => openDeleteConfirm(project.id)}
+                    index={index}
+                  />
+                </Suspense>
               ))
             )}
           </motion.div>

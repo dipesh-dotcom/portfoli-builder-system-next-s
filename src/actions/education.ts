@@ -1,7 +1,7 @@
 "use server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { cacheTag, revalidateTag } from "next/cache";
 
 export type EducationData = {
   instituteName: string;
@@ -9,6 +9,17 @@ export type EducationData = {
   startYear: number;
   endYear: number;
 };
+
+async function getCachedEducations(userId: string) {
+  "use cache";
+  cacheTag(`educations-${userId}`);
+  const educations = await prisma.education.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return educations;
+}
 
 export async function createEducation(data: EducationData) {
   try {
@@ -24,7 +35,7 @@ export async function createEducation(data: EducationData) {
       },
     });
 
-    revalidatePath("/education");
+    revalidateTag(`educations-${userId}`, "default");
 
     return { success: true, data: education, statusCode: 201 };
   } catch (error) {
@@ -49,12 +60,9 @@ export async function getEducations() {
         statusCode: 401,
       };
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { educations: { orderBy: { startYear: "desc" } } },
-    });
+    const educations = await getCachedEducations(userId);
 
-    return { success: true, data: user?.educations || [], statusCode: 200 };
+    return { success: true, data: educations || [], statusCode: 200 };
   } catch (error) {
     console.error("[Education] Fetch error:", error);
     return {
@@ -88,7 +96,7 @@ export async function updateEducation(id: string, data: EducationData) {
       data,
     });
 
-    revalidatePath("/education");
+    revalidateTag(`educations-${userId}`, "default");
 
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
@@ -120,7 +128,7 @@ export async function deleteEducation(id: string) {
 
     await prisma.education.delete({ where: { id } });
 
-    revalidatePath("/education");
+    revalidateTag(`educations-${userId}`, "default");
 
     return { success: true, statusCode: 200 };
   } catch (error) {

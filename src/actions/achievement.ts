@@ -2,13 +2,24 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { cacheTag, revalidateTag } from "next/cache";
 
 export type AchievementData = {
   title: string;
   issuer: string;
   dateObtained: string;
 };
+
+async function getCachedAchievements(userId: string) {
+  "use cache";
+  cacheTag(`achievements-${userId}`);
+  const achievements = await prisma.achievement.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return achievements;
+}
 
 export async function createAchievement(data: AchievementData) {
   try {
@@ -24,7 +35,7 @@ export async function createAchievement(data: AchievementData) {
       },
     });
 
-    revalidatePath("/achievement");
+    revalidateTag(`achievements-${userId}`, "default");
 
     return { success: true, data: achievement, statusCode: 201 };
   } catch (error) {
@@ -49,12 +60,9 @@ export async function getAchievements() {
         statusCode: 401,
       };
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { achievements: { orderBy: { dateObtained: "desc" } } },
-    });
+    const achievements = await getCachedAchievements(userId);
 
-    return { success: true, data: user?.achievements || [], statusCode: 200 };
+    return { success: true, data: achievements || [], statusCode: 200 };
   } catch (error) {
     console.error("[Achievement] Fetch error:", error);
     return {
@@ -92,7 +100,7 @@ export async function updateAchievement(id: string, data: AchievementData) {
       data,
     });
 
-    revalidatePath("/achievement");
+    revalidateTag(`achievements-${userId}`, "default");
 
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
@@ -128,7 +136,7 @@ export async function deleteAchievement(id: string) {
 
     await prisma.achievement.delete({ where: { id } });
 
-    revalidatePath("/achievement");
+    revalidateTag(`achievements-${userId}`, "default");
 
     return { success: true, statusCode: 200 };
   } catch (error) {

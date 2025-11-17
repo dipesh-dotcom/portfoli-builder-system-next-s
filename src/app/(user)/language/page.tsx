@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/home/ThreeBackground";
@@ -15,6 +15,7 @@ import {
   getLanguages,
 } from "@/actions/language";
 import ConfirmDialog from "@/components/cards/ConformationDialog";
+import Loader from "@/components/loader/Loader";
 
 type LanguageEntry = {
   id: string;
@@ -228,7 +229,7 @@ export default function LanguagePage() {
           >
             {loading ? (
               <div className="flex justify-center items-center h-40">
-                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
+                <Loader />
               </div>
             ) : languages.length === 0 ? (
               <motion.div
@@ -254,15 +255,17 @@ export default function LanguagePage() {
               </motion.div>
             ) : (
               languages.map((language, index) => (
-                <LanguageCard
-                  key={language.id}
-                  language={language}
-                  onEdit={() => handleEdit(language)}
-                  onDelete={() => openDeleteConfirm(language.id)}
-                  index={index}
-                  highlight={highlightedId === language.id}
-                  loading={deletingIds.has(language.id)}
-                />
+                <Suspense key={language.id} fallback={<Loader />}>
+                  <LanguageCard
+                    key={language.id}
+                    language={language}
+                    onEdit={() => handleEdit(language)}
+                    onDelete={() => openDeleteConfirm(language.id)}
+                    index={index}
+                    highlight={highlightedId === language.id}
+                    loading={deletingIds.has(language.id)}
+                  />
+                </Suspense>
               ))
             )}
           </motion.div>

@@ -1,10 +1,38 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { cacheTag, revalidateTag } from "next/cache";
 import type { ProjectData } from "@/types/user/projectTypes";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { deleteUploadcareFile } from "@/lib/uploadCare";
+
+async function getCachedProjects(userId: string) {
+  "use cache";
+  cacheTag(`projects-${userId}`);
+
+  const projects = await prisma.project.findMany({
+    where: { userId },
+    orderBy: { created_at: "desc" },
+  });
+
+  return projects;
+}
+
+export async function getProjects() {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized", data: [] };
+    }
+
+    const projects = await getCachedProjects(session.user.id);
+    return { success: true, data: projects, error: null };
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    return { success: false, error: "Failed to fetch projects", data: [] };
+  }
+}
 
 // CREATE
 export async function createProject(data: ProjectData) {
@@ -26,33 +54,12 @@ export async function createProject(data: ProjectData) {
       },
     });
 
-    revalidatePath("/projects");
+    revalidateTag(`projects-${session.user.id}`, "default");
 
     return { success: true, data: project, error: null };
   } catch (error) {
     console.error("Error creating project:", error);
     return { success: false, error: "Failed to create project", data: null };
-  }
-}
-
-// READ - Get all projects for current user
-export async function getProjects() {
-  try {
-    const session = await auth();
-
-    if (!session?.user?.id) {
-      return { success: false, error: "Unauthorized", data: [] };
-    }
-
-    const projects = await prisma.project.findMany({
-      where: { userId: session.user.id },
-      orderBy: { created_at: "desc" },
-    });
-
-    return { success: true, data: projects, error: null };
-  } catch (error) {
-    console.error("Error fetching projects:", error);
-    return { success: false, error: "Failed to fetch projects", data: [] };
   }
 }
 
@@ -65,19 +72,14 @@ export async function updateProject(id: string, data: ProjectData) {
       return { success: false, error: "Unauthorized", data: null };
     }
 
-    // Verify ownership and get existing project
     const existingProject = await prisma.project.findFirst({
-      where: {
-        id,
-        userId: session.user.id,
-      },
+      where: { id, userId: session.user.id },
     });
 
     if (!existingProject) {
       return { success: false, error: "Project not found", data: null };
     }
 
-    // Delete old image from Uploadcare if it's being replaced with a new one
     if (
       existingProject.preview_image &&
       data.preview_image &&
@@ -86,7 +88,6 @@ export async function updateProject(id: string, data: ProjectData) {
       await deleteUploadcareFile(existingProject.preview_image);
     }
 
-    // Delete old image if preview_image is being removed (set to null/empty)
     if (
       existingProject.preview_image &&
       (!data.preview_image || data.preview_image === "")
@@ -105,7 +106,7 @@ export async function updateProject(id: string, data: ProjectData) {
       },
     });
 
-    revalidatePath("/projects");
+    revalidateTag(`projects-${session.user.id}`, "default");
 
     return { success: true, data: project, error: null };
   } catch (error) {
@@ -123,29 +124,23 @@ export async function deleteProject(id: string) {
       return { success: false, error: "Unauthorized" };
     }
 
-    // Verify ownership and get existing project
     const existingProject = await prisma.project.findFirst({
-      where: {
-        id,
-        userId: session.user.id,
-      },
+      where: { id, userId: session.user.id },
     });
 
     if (!existingProject) {
       return { success: false, error: "Project not found" };
     }
 
-    // Delete image from Uploadcare if it exists
     if (existingProject.preview_image) {
       await deleteUploadcareFile(existingProject.preview_image);
     }
 
-    // Delete project from database
     await prisma.project.delete({
       where: { id },
     });
 
-    revalidatePath("/projects");
+    revalidateTag(`projects-${session.user.id}`, "default");
 
     return { success: true, error: null };
   } catch (error) {

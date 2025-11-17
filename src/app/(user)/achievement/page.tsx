@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/home/ThreeBackground";
@@ -241,15 +241,17 @@ export default function AchievementPage() {
               </motion.div>
             ) : (
               achievements.map((achievement, index) => (
-                <AchievementCard
-                  key={achievement.id}
-                  achievement={achievement}
-                  onEdit={() => handleEdit(achievement)}
-                  onDelete={() => openDeleteConfirm(achievement.id)}
-                  index={index}
-                  highlight={highlightedId === achievement.id}
-                  loading={deletingIds.has(achievement.id)}
-                />
+                <Suspense key={achievement.id} fallback={<Loader />}>
+                  <AchievementCard
+                    key={achievement.id}
+                    achievement={achievement}
+                    onEdit={() => handleEdit(achievement)}
+                    onDelete={() => openDeleteConfirm(achievement.id)}
+                    index={index}
+                    highlight={highlightedId === achievement.id}
+                    loading={deletingIds.has(achievement.id)}
+                  />
+                </Suspense>
               ))
             )}
           </motion.div>

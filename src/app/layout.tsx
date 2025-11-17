@@ -8,10 +8,9 @@ import "./globals.css";
 import NavbarWrapper from "@/components/navbar/NavbarWrapper";
 import Loader from "./loading";
 import { Toaster } from "react-hot-toast";
-import { SessionProvider } from "next-auth/react";
-import { auth } from "@/lib/auth";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import NextTopLoader from "nextjs-toploader";
+import SessionWrapper from "@/components/SessionWrapper";
 
 export const metadata: Metadata = {
   title: "Portfolio Builder System",
@@ -19,19 +18,17 @@ export const metadata: Metadata = {
   generator: "v0.app",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  const session = await auth();
+}) {
   return (
-    <SessionProvider session={session}>
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
               try {
                 const stored = localStorage.getItem('theme');
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -40,26 +37,32 @@ export default async function RootLayout({
                 }
               } catch (e) {}
             `,
-            }}
-          />
-        </head>
-        <body
-          className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}
-        >
-          <NextTopLoader
-            color="#2563eb" // Progress bar color
-            height={3} // Height of the bar
-            showSpinner={false} // Optional spinner
-            speed={400} // Speed of animation
-          />
+          }}
+        />
+      </head>
 
-          <NavbarWrapper />
-          <Suspense fallback={<Loader />}>{children}</Suspense>
-          <Analytics />
-          <SpeedInsights />
-        </body>
-      </html>
-      <Toaster />
-    </SessionProvider>
+      <body
+        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}
+      >
+        <NextTopLoader
+          color="#2563eb"
+          height={3}
+          showSpinner={false}
+          speed={400}
+        />
+
+        {/* async session provider moved here */}
+        <Suspense fallback={<Loader />}>
+          <SessionWrapper>
+            <NavbarWrapper />
+            {children}
+          </SessionWrapper>
+        </Suspense>
+
+        <Analytics />
+        <SpeedInsights />
+        <Toaster />
+      </body>
+    </html>
   );
 }

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/home/ThreeBackground";
 import { EducationForm } from "@/components/forms/EducationForm";
 import { EducationCard } from "@/components/cards/EducationCard";
 import { Button } from "@/components/ui/button";
-import { Plus, GraduationCap } from "lucide-react";
+import { Plus, GraduationCap, Loader } from "lucide-react";
 import {
   createEducation,
   updateEducation,
@@ -21,10 +21,10 @@ type EducationEntry = {
   userId: string;
   instituteName: string;
   degree: string;
-  startYear: string;
-  endYear: string;
-  createdAt: string;
-  updatedAt: string;
+  startYear: number;
+  endYear: number | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export default function EducationPage() {
@@ -43,11 +43,14 @@ export default function EducationPage() {
   useEffect(() => {
     const fetchEducations = async () => {
       try {
-        const data: any = await getEducations();
-        if (data.success) {
-          setEducations(data.data);
+        setLoading(true);
+        const res = await getEducations();
+        if (res.success) {
+          console.log(res.data);
+
+          setEducations(res.data);
         } else {
-          toast.error(data.error || "Failed to fetch education entries");
+          toast.error(res.error || "Failed to fetch education entries");
         }
       } catch (error) {
         console.error(error);
@@ -203,8 +206,11 @@ export default function EducationPage() {
                     ? {
                         instituteName: editingEducation.instituteName,
                         degree: editingEducation.degree,
-                        startYear: editingEducation.startYear,
-                        endYear: editingEducation.endYear,
+                        startYear: editingEducation.startYear.toString(),
+                        endYear:
+                          editingEducation.endYear !== null
+                            ? editingEducation.endYear.toString()
+                            : "",
                       }
                     : undefined
                 }
@@ -222,9 +228,7 @@ export default function EducationPage() {
             className="grid gap-4"
           >
             {loading ? (
-              <div className="flex justify-center items-center h-40">
-                <div className="w-12 h-12 border-4 border-t-indigo-500 border-r-transparent border-b-indigo-500 border-l-transparent rounded-full animate-spin"></div>
-              </div>
+              <Loader />
             ) : educations.length === 0 ? (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -249,21 +253,26 @@ export default function EducationPage() {
               </motion.div>
             ) : (
               educations.map((education, index) => (
-                <EducationCard
-                  key={education.id}
-                  education={{
-                    id: education.id,
-                    instituteName: education.instituteName,
-                    degree: education.degree,
-                    startYear: education.startYear,
-                    endYear: education.endYear,
-                  }}
-                  onEdit={() => handleEdit(education)}
-                  onDelete={() => openDeleteConfirm(education.id)}
-                  index={index}
-                  highlight={highlightedId === education.id}
-                  loading={deletingIds.has(education.id)}
-                />
+                <Suspense key={education.id} fallback={<Loader />}>
+                  <EducationCard
+                    key={education.id}
+                    education={{
+                      id: education.id,
+                      instituteName: education.instituteName,
+                      degree: education.degree,
+                      startYear: education.startYear.toString(),
+                      endYear:
+                        education.endYear !== null
+                          ? education.endYear.toString()
+                          : "",
+                    }}
+                    onEdit={() => handleEdit(education)}
+                    onDelete={() => openDeleteConfirm(education.id)}
+                    index={index}
+                    highlight={highlightedId === education.id}
+                    loading={deletingIds.has(education.id)}
+                  />
+                </Suspense>
               ))
             )}
           </motion.div>

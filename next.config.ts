@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  cacheComponents: true,
   reactStrictMode: true,
   images: {
     remotePatterns: [
@@ -10,9 +11,6 @@ const nextConfig: NextConfig = {
         hostname: "1ktfvxwijd.ucarecd.net",
       },
     ],
-  },
-  eslint: {
-    ignoreDuringBuilds: true, // ✅ Skip ESLint errors when building
   },
 };
 

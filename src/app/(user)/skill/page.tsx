@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { ThreeBackground } from "@/components/home/ThreeBackground";
@@ -15,6 +15,7 @@ import {
   getSkills,
 } from "@/actions/skill";
 import ConfirmDialog from "@/components/cards/ConformationDialog";
+import Loader from "@/components/loader/Loader";
 
 type SkillEntry = {
   id: string;
@@ -193,7 +194,7 @@ export default function SkillPage() {
           >
             {loading ? (
               <div className="flex justify-center items-center h-40">
-                <div className="w-12 h-12 border-4 border-t-primary border-r-transparent border-b-primary border-l-transparent rounded-full animate-spin" />
+                <Loader />
               </div>
             ) : skills.length === 0 ? (
               <motion.div
@@ -217,15 +218,17 @@ export default function SkillPage() {
               </motion.div>
             ) : (
               skills.map((skill, index) => (
-                <SkillCard
-                  key={skill.id}
-                  skill={skill}
-                  onEdit={() => handleEdit(skill)}
-                  onDelete={() => openDeleteConfirm(skill.id)}
-                  index={index}
-                  highlight={highlightedId === skill.id}
-                  loading={deletingIds.has(skill.id)}
-                />
+                <Suspense key={skill.id} fallback={<Loader />}>
+                  <SkillCard
+                    key={skill.id}
+                    skill={skill}
+                    onEdit={() => handleEdit(skill)}
+                    onDelete={() => openDeleteConfirm(skill.id)}
+                    index={index}
+                    highlight={highlightedId === skill.id}
+                    loading={deletingIds.has(skill.id)}
+                  />
+                </Suspense>
               ))
             )}
           </motion.div>

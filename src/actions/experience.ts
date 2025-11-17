@@ -1,7 +1,7 @@
 "use server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { cacheTag, revalidatePath, revalidateTag } from "next/cache";
 
 export type ExperienceData = {
   companyName: string;
@@ -11,14 +11,24 @@ export type ExperienceData = {
   description: string;
 };
 
+async function getCachedExperiences(userId: string) {
+  "use cache";
+  cacheTag(`experiences-${userId}`);
+
+  const experiences = await prisma.experience.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return experiences;
+}
+
 export async function createExperience(data: ExperienceData) {
   try {
     const session = await auth();
     const userId = session?.user?.id;
     if (!userId)
       return { success: false, error: "Unauthorized", statusCode: 401 };
-
-    let user = await prisma.user.findUnique({ where: { id: userId } });
 
     const experience = await prisma.experience.create({
       data: {
@@ -27,7 +37,7 @@ export async function createExperience(data: ExperienceData) {
       },
     });
 
-    revalidatePath("/experience");
+    revalidateTag(`experiences-${userId}`, "default");
     return { success: true, data: experience, statusCode: 201 };
   } catch (error) {
     console.error("[Education] Create error:", error);
@@ -51,11 +61,8 @@ export async function getExperiences() {
         statusCode: 401,
       };
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { experiences: { orderBy: { startYear: "desc" } } },
-    });
-    return { success: true, data: user?.experiences || [], statusCode: 200 };
+    const experiences = await getCachedExperiences(userId);
+    return { success: true, data: experiences || [], statusCode: 200 };
   } catch (error) {
     console.error("[Education] Fetch error:", error);
     return {
@@ -89,7 +96,7 @@ export async function updateExperience(id: string, data: ExperienceData) {
       where: { id },
       data,
     });
-    revalidatePath("/experience");
+    revalidateTag(`experiences-${userId}`, "default");
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
     console.error("[Education] Update error:", error);
@@ -120,7 +127,7 @@ export async function deleteExperience(id: string) {
 
     await prisma.experience.delete({ where: { id } });
 
-    revalidatePath("/experience");
+    revalidateTag(`experiences-${userId}`, "default");
 
     return { success: true, statusCode: 200 };
   } catch (error) {

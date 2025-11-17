@@ -159,10 +159,12 @@ model Skill {
 }
 
 model Language {
-  id          String @id @default(uuid()) @db.Uuid
-  userId      String @db.Uuid // Type is String and native type is UUID
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
   name        String
   proficiency String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
