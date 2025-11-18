@@ -231,7 +231,7 @@ export default function ExperiencePage() {
           >
             {loading ? (
               <div className="flex justify-center items-center h-40">
-                <Loader size="lg" />
+                <Loader />
               </div>
             ) : experiences.length === 0 ? (
               <motion.div

@@ -10,7 +10,7 @@ export type EducationData = {
   endYear: number;
 };
 
-async function getCachedEducations(userId: string) {
+export async function getCachedEducations(userId: string) {
   "use cache";
   cacheTag(`educations-${userId}`);
   const educations = await prisma.education.findMany({

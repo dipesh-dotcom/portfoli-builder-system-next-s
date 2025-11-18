@@ -18,6 +18,7 @@ function NavbarWrapper() {
     "/resume",
     "/skill",
     "/language",
+    "/admin",
   ];
 
   if (session && userRoutes.some((route) => pathName.startsWith(route))) {

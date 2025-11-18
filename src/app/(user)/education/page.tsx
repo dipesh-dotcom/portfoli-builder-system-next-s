@@ -7,7 +7,7 @@ import { ThreeBackground } from "@/components/home/ThreeBackground";
 import { EducationForm } from "@/components/forms/EducationForm";
 import { EducationCard } from "@/components/cards/EducationCard";
 import { Button } from "@/components/ui/button";
-import { Plus, GraduationCap, Loader } from "lucide-react";
+import { Plus, GraduationCap } from "lucide-react";
 import {
   createEducation,
   updateEducation,
@@ -15,6 +15,7 @@ import {
   getEducations,
 } from "@/actions/education";
 import ConfirmDialog from "@/components/cards/ConformationDialog";
+import Loader from "@/components/loader/Loader";
 
 type EducationEntry = {
   id: string;
