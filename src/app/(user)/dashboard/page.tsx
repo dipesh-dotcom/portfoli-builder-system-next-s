@@ -1,7 +1,4 @@
 "use client";
-import React from "react";
-import prisma from "@/lib/prisma";
-import { DashboardContent } from "@/components/client/DashboardContent";
 import { useSession } from "next-auth/react";
 
 const DashbaordPage = () => {
@@ -12,9 +9,8 @@ const DashbaordPage = () => {
   }
 
   return (
-    <div>
-      Welcome, {session?.user?.name ?? "User"}!
-      <DashboardContent />
+    <div className="flex text-5xl justify-center items-center">
+      Welcome, {session?.user?.name ?? "User"}!{/* <DashboardContent /> */}
     </div>
   );
 };

@@ -3,6 +3,15 @@ import prisma from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
+// generate slug
+function generateSlug(name: string) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "") // remove special chars
+    .replace(/\s+/g, "-"); // spaces → hyphens
+}
+
 // GET all templates
 export async function GET(req: NextRequest) {
   try {
@@ -21,16 +30,18 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, slug, description, thumbnail, category, styles, sections } =
-      body;
+    const { name, description, thumbnail, category, styles, sections } = body;
 
     // Validate required fields
-    if (!name || !slug) {
+    if (!name) {
       return NextResponse.json(
-        { success: false, message: "Name and slug are required" },
+        { success: false, message: "Name is  required" },
         { status: 400 }
       );
     }
+
+    // Auto-generate slug from name
+    const slug = generateSlug(name);
 
     // Check if slug exists
     const existing = await prisma.portfolioTemplate.findUnique({
