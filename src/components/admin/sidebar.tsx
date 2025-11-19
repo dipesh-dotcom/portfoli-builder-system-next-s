@@ -67,7 +67,7 @@ export function AdminDashboardLayout({
   const navItems = [
     { name: "Dashboard", icon: LayoutDashboard, href: "/admin" },
     { name: "Users", icon: UserCircle, href: "/admin/users" },
-    // { name: "Education", icon: GraduationCap, href: "/education" },
+    { name: "Templates", icon: GraduationCap, href: "/admin/templates" },
     // { name: "Experience", icon: Briefcase, href: "/experience" },
     // { name: "Project", icon: FolderKanban, href: "/project" },
     // { name: "Achievement", icon: Award, href: "/achievement" },
