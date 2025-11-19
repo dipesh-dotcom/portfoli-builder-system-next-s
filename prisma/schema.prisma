@@ -188,3 +188,70 @@ model Project {
   @@index([userId])
   @@map("projects")
 }
+
+model PortfolioTemplate {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  thumbnail   String? // Preview image URL
+  category    String // e.g., "minimal", "creative", "corporate"
+
+  // Template structure
+  sections TemplateSection[]
+  styles   Json? // Global styles/theme
+
+  // Metadata
+  isPublished Boolean @default(false)
+  isPremium   Boolean @default(false)
+  downloads   Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  portfolios Portfolio[]
+
+  @@index([slug])
+  @@index([category])
+}
+
+model TemplateSection {
+  id         String            @id @default(cuid())
+  templateId String
+  template   PortfolioTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  name  String // e.g., "hero", "about", "projects", "contact"
+  type  String // Section type
+  order Int // Display order
+
+  // Section configuration
+  config     Json // Section-specific settings
+  isRequired Boolean @default(false)
+  isEnabled  Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([templateId])
+}
+
+model Portfolio {
+  id         String            @id @default(cuid())
+  userId     String // User who owns this portfolio
+  templateId String
+  template   PortfolioTemplate @relation(fields: [templateId], references: [id])
+
+  // Custom data
+  title String
+  slug  String @unique
+  data  Json // User's custom content for each section
+
+  isPublished Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([slug])
+}
