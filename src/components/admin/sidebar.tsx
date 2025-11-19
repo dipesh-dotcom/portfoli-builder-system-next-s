@@ -1,153 +1,228 @@
 "use client";
-import React from "react";
-import { Sidebar, SidebarBody, SidebarLink } from "../ui/sidebar";
+
+import type React from "react";
+import { useState, useEffect, Suspense } from "react";
+import { Button } from "@/components/ui/button";
 import {
-  IconBrandTabler,
-  IconSettings,
-  IconUserBolt,
-  IconPackage,
-  IconShoppingCart,
-  IconUsers,
-  IconBox,
-} from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
+  Moon,
+  Sun,
+  LayoutDashboard,
+  UserCircle,
+  GraduationCap,
+  Menu,
+  X,
+  Briefcase,
+  FolderKanban,
+  Award,
+  FileText,
+  Wrench,
+  Languages,
+  Home,
+  User,
+  LogOut,
+} from "lucide-react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { BookTemplate, User } from "lucide-react";
-import { FcTemplate } from "react-icons/fc";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
+import GlobalLoading from "@/app/loading";
+import { signOut } from "next-auth/react";
+import toast from "react-hot-toast";
 
-export function AdminSidebar({
-  open,
-  setOpen,
+export function AdminDashboardLayout({
+  children,
 }: {
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  children: React.ReactNode;
 }) {
-  const session = useSession();
-  const links = [
-    {
-      label: "Dashboard",
-      href: "/admin",
-      icon: (
-        <IconBrandTabler className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
+  const [isDark, setIsDark] = useState(false);
+  const [activeNav, setActiveNav] = useState("Dashboard");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathName = usePathname();
 
-    {
-      label: "Users",
-      href: "/admin/users",
-      icon: (
-        <IconUsers className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
-    {
-      label: "Templates",
-      href: "reviews",
-      icon: (
-        <BookTemplate className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
+  // Initialize theme
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    ).matches;
+    const shouldBeDark = stored === "dark" || (!stored && prefersDark);
+    setIsDark(shouldBeDark);
+    if (shouldBeDark) document.documentElement.classList.add("dark");
+  }, []);
 
-    // {
-    //   label: "Discounts",
-    //   href: "#discounts",
-    //   icon: (
-    //     <IconTag className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-    //   ),
-    // },
-    // {
-    //   label: "Reports",
-    //   href: "#reports",
-    //   icon: (
-    //     <IconChartBar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-    //   ),
-    // },
+  const toggleTheme = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
+    document.documentElement.classList.toggle("dark");
+  };
 
-    {
-      label: "Settings",
-      href: "#settings",
-      icon: (
-        <IconSettings className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />
-      ),
-    },
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: "/" });
+    toast.success("Logged out successfully!", {
+      duration: 2000,
+      position: "bottom-right",
+    });
+  };
+
+  const navItems = [
+    { name: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+    { name: "Users", icon: UserCircle, href: "/admin/users" },
+    // { name: "Education", icon: GraduationCap, href: "/education" },
+    // { name: "Experience", icon: Briefcase, href: "/experience" },
+    // { name: "Project", icon: FolderKanban, href: "/project" },
+    // { name: "Achievement", icon: Award, href: "/achievement" },
+    // { name: "Skill", icon: Wrench, href: "/skill" },
+    // { name: "Language", icon: Languages, href: "/language" },
+    // { name: "Resume", icon: FileText, href: "/resume" },
   ];
+
+  const titleMap: Record<string, string> = Object.fromEntries(
+    navItems.map((item) => [item.href, item.name])
+  );
+
   return (
-    <div
-      className={cn(
-        "fixed left-0 top-0 h-screen border-r border-neutral-200 bg-gray-100 dark:border-neutral-700 dark:bg-neutral-900",
-        open ? "w-64" : "w-16",
-        "transition-all duration-300"
-      )}
-    >
-      <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-            {open ? <Logo /> : <LogoIcon />}
-            <div className="mt-8 flex flex-col gap-2">
-              {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
-              ))}
+    <div className="flex h-screen bg-background overflow-hidden">
+      {/* Mobile backdrop */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <AnimatePresence>
+        <motion.aside
+          initial={{ x: -100, opacity: 0 }}
+          animate={{ x: isMobileMenuOpen ? 0 : 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card border-r border-border flex flex-col transition-transform duration-300 ${
+            isMobileMenuOpen
+              ? "translate-x-0"
+              : "-translate-x-full lg:translate-x-0"
+          }`}
+        >
+          {/* Logo */}
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <div className="flex items-center justify-center h-12 bg-primary/10 rounded-lg flex-1">
+              <span className="text-lg font-semibold text-foreground">
+                Logo
+              </span>
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <X className="h-5 w-5" />
+            </Button>
           </div>
-          <div className="flex items-center mb-15">
-            <SidebarLink
-              className="mb-2"
-              link={{
-                label: `${session.data?.user?.name || "...."}`,
-                href: "#",
-                icon: (
-                  <img
-                    src={`${session.data?.user?.image || "/fallback.jpeg"}`}
-                    className="h-7 w-7 shrink-0 rounded-full"
-                    width={50}
-                    height={50}
-                    alt="Avatar"
-                  />
-                ),
-              }}
-            />
-            {/* {open && (
-              <div className="ml-2 transition duration-300">
-                <Tooltip>
-                  <TooltipTrigger>
-                    <SignOutButton>
-                      <IconLogout className="h-5 w-7 cursor-pointer shrink-0 text-neutral-700 dark:text-neutral-200" />
-                    </SignOutButton>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Log Out</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            )}
-          </div> */}
+
+          {/* Navigation */}
+          <nav className="flex-1 p-4">
+            <ul className="space-y-2">
+              {navItems.map((item, index) => (
+                <motion.li
+                  key={item.name}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <Link
+                    href={item.href}
+                    onClick={() => {
+                      setActiveNav(item.name);
+                      setIsMobileMenuOpen(false);
+                    }}
+                  >
+                    <Button
+                      variant="ghost"
+                      className={`w-full justify-start flex items-center gap-3 px-3 py-2 rounded-md transition-all duration-200
+                        ${
+                          activeNav === item.name
+                            ? "bg-primary/10 text-primary border border-primary/30 shadow-sm"
+                            : "text-foreground hover:bg-primary/10 hover:text-primary hover:translate-x-1 hover:shadow-sm"
+                        }`}
+                    >
+                      <item.icon className="h-5 w-5 transition-colors duration-200" />
+                      {item.name}
+                    </Button>
+                  </Link>
+                </motion.li>
+              ))}
+            </ul>
+          </nav>
+        </motion.aside>
+      </AnimatePresence>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <motion.header
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.4 }}
+          className="h-16 border-b border-border bg-card flex items-center justify-between px-4 md:px-6"
+        >
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">
+              {titleMap[pathName] || "Dashboard"}
+            </h1>
           </div>
-        </SidebarBody>
-      </Sidebar>
+
+          {/* Header actions */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="rounded-full border border-transparent hover:bg-primary/10 hover:scale-110 hover:shadow-md transition-all duration-200"
+            >
+              {isDark ? (
+                <Sun className="h-5 w-5 text-warning" />
+              ) : (
+                <Moon className="h-5 w-5 text-primary" />
+              )}
+            </Button>
+
+            <Link href="/">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full border border-transparent hover:bg-primary/10 hover:scale-110 hover:shadow-md transition-all duration-200"
+              >
+                <Home className="h-5 w-5" />
+              </Button>
+            </Link>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="rounded-full border border-transparent hover:bg-primary/10 hover:scale-110 hover:shadow-md transition-all duration-200 flex items-center gap-1"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
+        </motion.header>
+
+        <main className="flex-1 overflow-auto p-4 md:p-6">
+          <Suspense fallback={<GlobalLoading />}>{children}</Suspense>
+        </main>
+      </div>
     </div>
   );
 }
-export const Logo = () => {
-  return (
-    <Link
-      href="/"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
-    >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
-
-      <h1 className="font-medium whitespace-pre text-black dark:text-white">
-        PortScore
-      </h1>
-    </Link>
-  );
-};
-export const LogoIcon = () => {
-  return (
-    <a
-      href="#"
-      className="relative z-20 flex items-center space-x-2 py-1 text-sm font-normal text-black"
-    >
-      <div className="h-5 w-6 shrink-0 rounded-tl-lg rounded-tr-sm rounded-br-lg rounded-bl-sm bg-black dark:bg-white" />
-    </a>
-  );
-};
