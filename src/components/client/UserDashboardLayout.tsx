@@ -20,6 +20,7 @@ import {
   Home,
   User,
   LogOut,
+  Github,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -74,6 +75,7 @@ export function UserDashboardLayout({
     { name: "Skill", icon: Wrench, href: "/skill" },
     { name: "Language", icon: Languages, href: "/language" },
     { name: "Resume", icon: FileText, href: "/resume" },
+    { name: "Github Data", icon: Github, href: "/github" },
   ];
 
   const titleMap: Record<string, string> = Object.fromEntries(

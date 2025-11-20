@@ -18,6 +18,7 @@ function NavbarWrapper() {
     "/resume",
     "/skill",
     "/language",
+    "/github",
     "/admin",
   ];
 
