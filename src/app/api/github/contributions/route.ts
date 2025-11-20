@@ -176,7 +176,7 @@ async function fetchGitHubData(
 
 export async function GET(req: NextRequest) {
   try {
-    const searchParams = req.nextUrl.searchParams;
+    const { searchParams } = new URL(req.url);
     const username = searchParams.get("username");
 
     if (!username) {
