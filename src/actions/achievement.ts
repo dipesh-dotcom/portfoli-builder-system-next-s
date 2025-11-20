@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { cacheTag, revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 export type AchievementData = {
   title: string;
@@ -10,9 +10,7 @@ export type AchievementData = {
   dateObtained: string;
 };
 
-async function getCachedAchievements(userId: string) {
-  "use cache";
-  cacheTag(`achievements-${userId}`);
+async function fetchAchievements(userId: string) {
   const achievements = await prisma.achievement.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -20,6 +18,16 @@ async function getCachedAchievements(userId: string) {
 
   return achievements;
 }
+
+// cached function
+const getCachedAchievements = unstable_cache(
+  fetchAchievements,
+  ["achievements"],
+  {
+    revalidate: 3600,
+    tags: ["achievements"],
+  }
+);
 
 export async function createAchievement(data: AchievementData) {
   try {
@@ -35,7 +43,7 @@ export async function createAchievement(data: AchievementData) {
       },
     });
 
-    revalidateTag(`achievements-${userId}`, "default");
+    revalidateTag("achievements", { expire: 0 });
 
     return { success: true, data: achievement, statusCode: 201 };
   } catch (error) {
@@ -100,7 +108,7 @@ export async function updateAchievement(id: string, data: AchievementData) {
       data,
     });
 
-    revalidateTag(`achievements-${userId}`, "default");
+    revalidateTag("achievements", { expire: 0 });
 
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
@@ -136,7 +144,7 @@ export async function deleteAchievement(id: string) {
 
     await prisma.achievement.delete({ where: { id } });
 
-    revalidateTag(`achievements-${userId}`, "default");
+    revalidateTag("achievements", { expire: 0 });
 
     return { success: true, statusCode: 200 };
   } catch (error) {

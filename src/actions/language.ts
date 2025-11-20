@@ -2,17 +2,19 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { cacheTag, revalidatePath, revalidateTag } from "next/cache";
+import {
+  cacheTag,
+  revalidatePath,
+  revalidateTag,
+  unstable_cache,
+} from "next/cache";
 
 export type LanguageData = {
   name: string;
   proficiency: string;
 };
 
-async function getCachedLanguages(userId: string) {
-  "use cache";
-  cacheTag(`languages-${userId}`);
-
+async function fetchLanguages(userId: string) {
   const projects = await prisma.language.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -20,6 +22,12 @@ async function getCachedLanguages(userId: string) {
 
   return projects;
 }
+
+// cached function
+const getCachedLanguages = unstable_cache(fetchLanguages, ["languages"], {
+  revalidate: 3600,
+  tags: ["languages"],
+});
 
 export async function createLanguage(data: LanguageData) {
   try {
@@ -35,7 +43,7 @@ export async function createLanguage(data: LanguageData) {
       },
     });
 
-    revalidateTag(`languages-${userId}`, "defualt");
+    revalidateTag("languages", { expire: 0 });
 
     return { success: true, data: language, statusCode: 201 };
   } catch (error) {
@@ -96,7 +104,7 @@ export async function updateLangugae(id: string, data: LanguageData) {
       data,
     });
 
-    revalidateTag(`languages-${userId}`, "defualt");
+    revalidateTag("languages", { expire: 0 });
 
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
@@ -128,7 +136,7 @@ export async function deleteLanguage(id: string) {
 
     await prisma.language.delete({ where: { id } });
 
-    revalidateTag(`languages-${userId}`, "defualt");
+    revalidateTag("languages", { expire: 0 });
 
     return { success: true, statusCode: 200 };
   } catch (error) {

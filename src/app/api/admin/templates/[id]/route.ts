@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { revalidateTag } from "next/cache";
 
 // GET single template
 export async function GET(
@@ -111,9 +110,6 @@ export async function PUT(
       }
     }
 
-    revalidateTag("templates", "default");
-    revalidateTag(`template-${id}`, "default");
-
     return NextResponse.json({ success: true, data: template });
   } catch (error: any) {
     console.error("Error updating template:", error);
@@ -135,9 +131,6 @@ export async function DELETE(
     await prisma.portfolioTemplate.delete({
       where: { id },
     });
-
-    revalidateTag("templates", "default");
-    revalidateTag(`template-${id}`, "default");
 
     return NextResponse.json({ success: true, message: "Template deleted" });
   } catch (error: any) {

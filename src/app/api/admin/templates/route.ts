@@ -1,6 +1,5 @@
 import { getTemplates } from "@/lib/data/templates";
 import prisma from "@/lib/prisma";
-import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 // generate slug
@@ -80,8 +79,6 @@ export async function POST(req: NextRequest) {
         sections: true,
       },
     });
-
-    revalidateTag("templates", "default");
 
     return NextResponse.json(
       { success: true, data: template },

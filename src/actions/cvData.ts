@@ -10,7 +10,7 @@ import type {
   Language,
   Project,
 } from "@prisma/client";
-import { cacheTag } from "next/cache";
+import { cacheTag, unstable_cache } from "next/cache";
 
 // Define the user type with all relations
 export type UserWithRelations = User & {
@@ -40,9 +40,7 @@ type CvDataError = {
 
 export type CvDataResponse = CvDataSuccess | CvDataError;
 
-async function getCachedCvData(userId: string) {
-  "use cache";
-  cacheTag("CvData");
+async function fetchCvData(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -58,6 +56,12 @@ async function getCachedCvData(userId: string) {
 
   return user;
 }
+
+// cached function
+const getCachedCvData = unstable_cache(fetchCvData, ["resume"], {
+  revalidate: 3600,
+  tags: ["resume"],
+});
 
 export async function getCvData(): Promise<CvDataResponse> {
   try {

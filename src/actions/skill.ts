@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { cacheTag, revalidatePath, revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 import { auth } from "@/lib/auth";
 
@@ -10,10 +10,7 @@ export type SkillData = {
   rating: number;
 };
 
-async function getCachedSkills(userId: string) {
-  "use cache";
-  cacheTag(`skills-${userId}`);
-
+async function fetchSkills(userId: string) {
   const skills = await prisma.skill.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -21,6 +18,12 @@ async function getCachedSkills(userId: string) {
 
   return skills;
 }
+
+// cached function
+const getCachedSkills = unstable_cache(fetchSkills, ["skills"], {
+  revalidate: 3600,
+  tags: ["skills"],
+});
 
 export async function createSkill(data: SkillData) {
   try {
@@ -36,7 +39,7 @@ export async function createSkill(data: SkillData) {
       },
     });
 
-    revalidateTag(`skills-${userId}`, "default");
+    revalidateTag("skills", { expire: 0 });
 
     return { success: true, data: skill, statusCode: 201 };
   } catch (error) {
@@ -96,7 +99,7 @@ export async function updateSkill(id: string, data: SkillData) {
       data,
     });
 
-    revalidateTag(`skills-${userId}`, "default");
+    revalidateTag("skills", { expire: 0 });
 
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
@@ -129,7 +132,7 @@ export async function deleteSkill(id: string) {
 
     await prisma.skill.delete({ where: { id } });
 
-    revalidateTag(`skills-${userId}`, "default");
+    revalidateTag("skills", { expire: 0 });
 
     return { success: true, statusCode: 200 };
   } catch (error) {

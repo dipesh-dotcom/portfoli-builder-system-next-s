@@ -1,15 +1,12 @@
 "use server";
 
-import { cacheTag, revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 import type { ProjectData } from "@/types/user/projectTypes";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { deleteUploadcareFile } from "@/lib/uploadCare";
 
-async function getCachedProjects(userId: string) {
-  "use cache";
-  cacheTag(`projects-${userId}`);
-
+async function fetchProjects(userId: string) {
   const projects = await prisma.project.findMany({
     where: { userId },
     orderBy: { created_at: "desc" },
@@ -17,6 +14,12 @@ async function getCachedProjects(userId: string) {
 
   return projects;
 }
+
+// cached function
+const getCachedProjects = unstable_cache(fetchProjects, ["projects"], {
+  revalidate: 3600,
+  tags: ["projects"],
+});
 
 export async function getProjects() {
   try {
@@ -54,7 +57,7 @@ export async function createProject(data: ProjectData) {
       },
     });
 
-    revalidateTag(`projects-${session.user.id}`, "default");
+    revalidateTag("projects", { expire: 0 });
 
     return { success: true, data: project, error: null };
   } catch (error) {
@@ -106,7 +109,7 @@ export async function updateProject(id: string, data: ProjectData) {
       },
     });
 
-    revalidateTag(`projects-${session.user.id}`, "default");
+    revalidateTag("projects", { expire: 0 });
 
     return { success: true, data: project, error: null };
   } catch (error) {
@@ -140,7 +143,7 @@ export async function deleteProject(id: string) {
       where: { id },
     });
 
-    revalidateTag(`projects-${session.user.id}`, "default");
+    revalidateTag("projects", { expire: 0 });
 
     return { success: true, error: null };
   } catch (error) {

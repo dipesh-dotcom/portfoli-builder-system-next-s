@@ -1,7 +1,7 @@
 "use server";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { cacheTag, revalidateTag } from "next/cache";
+import { cacheTag, revalidateTag, unstable_cache } from "next/cache";
 
 export type EducationData = {
   instituteName: string;
@@ -10,9 +10,7 @@ export type EducationData = {
   endYear: number;
 };
 
-export async function getCachedEducations(userId: string) {
-  "use cache";
-  cacheTag(`educations-${userId}`);
+async function fetchEducations(userId: string) {
   const educations = await prisma.education.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
@@ -20,6 +18,12 @@ export async function getCachedEducations(userId: string) {
 
   return educations;
 }
+
+// cached function
+const getCachedEducations = unstable_cache(fetchEducations, ["educations"], {
+  revalidate: 3600,
+  tags: ["educations"],
+});
 
 export async function createEducation(data: EducationData) {
   try {
@@ -35,7 +39,7 @@ export async function createEducation(data: EducationData) {
       },
     });
 
-    revalidateTag(`educations-${userId}`, "default");
+    revalidateTag("educations", { expire: 0 });
 
     return { success: true, data: education, statusCode: 201 };
   } catch (error) {
@@ -96,7 +100,7 @@ export async function updateEducation(id: string, data: EducationData) {
       data,
     });
 
-    revalidateTag(`educations-${userId}`, "default");
+    revalidateTag("educations", { expire: 0 });
 
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
@@ -128,7 +132,7 @@ export async function deleteEducation(id: string) {
 
     await prisma.education.delete({ where: { id } });
 
-    revalidateTag(`educations-${userId}`, "default");
+    revalidateTag("educations", { expire: 0 });
 
     return { success: true, statusCode: 200 };
   } catch (error) {

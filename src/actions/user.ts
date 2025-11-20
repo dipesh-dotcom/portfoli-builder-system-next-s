@@ -1,9 +1,8 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { Role } from "@prisma/client";
-import { cacheTag, revalidateTag } from "next/cache";
+import { cacheTag, revalidateTag, unstable_cache } from "next/cache";
 
 export type UserData = {
   id: string;
@@ -14,15 +13,19 @@ export type UserData = {
   createdAt: Date;
 };
 
-async function getCachedUsers() {
-  "use cache";
-  cacheTag("users");
+async function fetchUsers() {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
   });
 
   return users;
 }
+
+// cached function
+const getCachedUsers = unstable_cache(fetchUsers, ["users"], {
+  revalidate: 3600,
+  tags: ["users"],
+});
 
 export async function getUsers() {
   try {
@@ -57,7 +60,7 @@ export async function updateUser(
       },
     });
 
-    revalidateTag("users", "default");
+    revalidateTag("users", { expire: 0 });
 
     return { success: true, data: updated, statusCode: 200 };
   } catch (error) {
@@ -74,7 +77,7 @@ export async function deleteUser(id: string) {
   try {
     await prisma.user.delete({ where: { id } });
 
-    revalidateTag(`users`, "default");
+    revalidateTag("users", { expire: 0 });
 
     return { success: true, statusCode: 200 };
   } catch (error) {
