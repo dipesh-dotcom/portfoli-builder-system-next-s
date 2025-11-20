@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 interface ContributionDay {
   date: string;
@@ -174,9 +174,9 @@ async function fetchGitHubData(
   };
 }
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const searchParams = req.nextUrl.searchParams;
     const username = searchParams.get("username");
 
     if (!username) {
@@ -200,7 +200,6 @@ export async function GET(req: Request) {
     }
 
     const stats = await fetchGitHubData(username, token);
-
     return NextResponse.json({
       success: true,
       data: stats,

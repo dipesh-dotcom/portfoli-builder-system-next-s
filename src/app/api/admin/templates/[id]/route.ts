@@ -5,10 +5,10 @@ import { revalidateTag } from "next/cache";
 // GET single template
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
     const template = await prisma.portfolioTemplate.findUnique({
       where: { id },
       include: {
@@ -38,10 +38,10 @@ export async function GET(
 // UPDATE template
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     const body = await req.json();
     const {
@@ -79,7 +79,7 @@ export async function PUT(
       // Delete removed sections
       await prisma.templateSection.deleteMany({
         where: {
-          templateId: params.id,
+          templateId: id,
           id: {
             notIn: sections.filter((s: any) => s.id).map((s: any) => s.id),
           },
@@ -91,7 +91,7 @@ export async function PUT(
         await prisma.templateSection.upsert({
           where: { id: section.id || "new" },
           create: {
-            templateId: params.id,
+            templateId: id,
             name: section.name,
             type: section.type,
             order: section.order,
@@ -112,7 +112,7 @@ export async function PUT(
     }
 
     revalidateTag("templates", "default");
-    revalidateTag(`template-${params.id}`, "default");
+    revalidateTag(`template-${id}`, "default");
 
     return NextResponse.json({ success: true, data: template });
   } catch (error: any) {
@@ -127,17 +127,17 @@ export async function PUT(
 // DELETE template
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await context.params;
 
     await prisma.portfolioTemplate.delete({
       where: { id },
     });
 
     revalidateTag("templates", "default");
-    revalidateTag(`template-${params.id}`, "default");
+    revalidateTag(`template-${id}`, "default");
 
     return NextResponse.json({ success: true, message: "Template deleted" });
   } catch (error: any) {
