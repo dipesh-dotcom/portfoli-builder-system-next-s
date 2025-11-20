@@ -1,23 +1,56 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { GithubIcon } from "lucide-react";
+import { GithubIcon, X } from "lucide-react";
 import { GitHubContributionGraph } from "@/components/github/github-contribution-graph";
 import { GitHubActivityTimeline } from "@/components/github/github-activity-timeline";
 
+const STORAGE_KEY = "github_username";
+
 export default function DashboardContent() {
-  const [username, setUsername] = useState("torvalds"); // Default to Linus Torvalds for demo
+  const [username, setUsername] = useState("");
   const [inputValue, setInputValue] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load saved username on component mount
+  useEffect(() => {
+    const savedUsername = localStorage.getItem(STORAGE_KEY);
+    if (savedUsername) {
+      setUsername(savedUsername);
+    }
+    setIsLoading(false);
+  }, []);
 
   const handleSearch = () => {
     if (inputValue.trim()) {
-      setUsername(inputValue);
+      const newUsername = inputValue.trim();
+      setUsername(newUsername);
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEY, newUsername);
       setInputValue("");
     }
   };
+
+  const handleClearUsername = () => {
+    setUsername("");
+    localStorage.removeItem(STORAGE_KEY);
+    setInputValue("");
+  };
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border border-primary border-t-transparent" />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -36,9 +69,28 @@ export default function DashboardContent() {
         {/* Search Section */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Search GitHub User</CardTitle>
+            <CardTitle>
+              {username ? "Change GitHub User" : "Search GitHub User"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
+            {username && (
+              <div className="mb-4 p-3 bg-muted rounded-lg flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Current User</p>
+                  <p className="font-semibold text-lg">@{username}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearUsername}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Clear
+                </Button>
+              </div>
+            )}
             <div className="flex gap-2">
               <Input
                 placeholder="Enter GitHub username..."
@@ -47,19 +99,35 @@ export default function DashboardContent() {
                 onKeyPress={(e) => e.key === "Enter" && handleSearch()}
                 className="flex-1"
               />
-              <Button onClick={handleSearch}>Search</Button>
+              <Button onClick={handleSearch}>
+                {username ? "Change" : "Search"}
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <GitHubContributionGraph username={username} />
+        {/* Dashboard Content */}
+        {username ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <GitHubContributionGraph username={username} />
+            </div>
+            <div>
+              <GitHubActivityTimeline username={username} />
+            </div>
           </div>
-          <div>
-            <GitHubActivityTimeline username={username} />
-          </div>
-        </div>
+        ) : (
+          <Card>
+            <CardContent className="py-12">
+              <div className="text-center text-muted-foreground">
+                <GithubIcon className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg">
+                  Enter a GitHub username to get started
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </main>
   );
