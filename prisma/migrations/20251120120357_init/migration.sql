@@ -72,6 +72,7 @@ CREATE TABLE "UserProfile" (
     "bio" TEXT,
     "location" TEXT,
     "occupation" TEXT,
+    "joined_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -138,6 +139,8 @@ CREATE TABLE "languages" (
     "userId" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "proficiency" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "languages_pkey" PRIMARY KEY ("id")
 );
@@ -155,6 +158,64 @@ CREATE TABLE "projects" (
     "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "projects_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TemplateCategory" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TemplateCategory_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Template" (
+    "id" UUID NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "code" TEXT NOT NULL,
+    "thumbnail" TEXT,
+    "preview" TEXT,
+    "published" BOOLEAN NOT NULL DEFAULT false,
+    "categoryId" UUID NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Template_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Portfolio" (
+    "id" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "templateId" UUID NOT NULL,
+    "title" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "published" BOOLEAN NOT NULL DEFAULT false,
+    "viewCount" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Portfolio_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortfolioCustomization" (
+    "id" UUID NOT NULL,
+    "portfolioId" UUID NOT NULL,
+    "templateId" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+    "fieldName" TEXT NOT NULL,
+    "fieldValue" TEXT NOT NULL,
+    "fieldType" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PortfolioCustomization_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -176,6 +237,9 @@ CREATE UNIQUE INDEX "VerificationToken_identifier_token_key" ON "VerificationTok
 CREATE UNIQUE INDEX "PasswordResetToken_token_key" ON "PasswordResetToken"("token");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "UserProfile_userId_key" ON "UserProfile"("userId");
+
+-- CreateIndex
 CREATE INDEX "educations_userId_idx" ON "educations"("userId");
 
 -- CreateIndex
@@ -192,6 +256,45 @@ CREATE INDEX "languages_userId_idx" ON "languages"("userId");
 
 -- CreateIndex
 CREATE INDEX "projects_userId_idx" ON "projects"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TemplateCategory_name_key" ON "TemplateCategory"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TemplateCategory_slug_key" ON "TemplateCategory"("slug");
+
+-- CreateIndex
+CREATE INDEX "Template_categoryId_idx" ON "Template"("categoryId");
+
+-- CreateIndex
+CREATE INDEX "Template_published_idx" ON "Template"("published");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Portfolio_slug_key" ON "Portfolio"("slug");
+
+-- CreateIndex
+CREATE INDEX "Portfolio_userId_idx" ON "Portfolio"("userId");
+
+-- CreateIndex
+CREATE INDEX "Portfolio_templateId_idx" ON "Portfolio"("templateId");
+
+-- CreateIndex
+CREATE INDEX "Portfolio_published_idx" ON "Portfolio"("published");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Portfolio_userId_slug_key" ON "Portfolio"("userId", "slug");
+
+-- CreateIndex
+CREATE INDEX "PortfolioCustomization_portfolioId_idx" ON "PortfolioCustomization"("portfolioId");
+
+-- CreateIndex
+CREATE INDEX "PortfolioCustomization_templateId_idx" ON "PortfolioCustomization"("templateId");
+
+-- CreateIndex
+CREATE INDEX "PortfolioCustomization_userId_idx" ON "PortfolioCustomization"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PortfolioCustomization_portfolioId_fieldName_key" ON "PortfolioCustomization"("portfolioId", "fieldName");
 
 -- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -218,4 +321,22 @@ ALTER TABLE "skills" ADD CONSTRAINT "skills_userId_fkey" FOREIGN KEY ("userId") 
 ALTER TABLE "languages" ADD CONSTRAINT "languages_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "projects" ADD CONSTRAINT "projects_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "projects" ADD CONSTRAINT "projects_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Template" ADD CONSTRAINT "Template_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "TemplateCategory"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Portfolio" ADD CONSTRAINT "Portfolio_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Portfolio" ADD CONSTRAINT "Portfolio_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "Template"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortfolioCustomization" ADD CONSTRAINT "PortfolioCustomization_portfolioId_fkey" FOREIGN KEY ("portfolioId") REFERENCES "Portfolio"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortfolioCustomization" ADD CONSTRAINT "PortfolioCustomization_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "Template"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortfolioCustomization" ADD CONSTRAINT "PortfolioCustomization_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

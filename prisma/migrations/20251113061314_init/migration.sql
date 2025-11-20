@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "UserProfile" ADD COLUMN     "joined_date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

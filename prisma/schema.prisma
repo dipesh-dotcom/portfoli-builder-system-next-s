@@ -27,15 +27,17 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  accounts     Account[]
-  sessions     Session[]
-  educations   Education[]
-  experiences  Experience[]
-  achievements Achievement[]
-  skills       Skill[]
-  languages    Language[]
-  projects     Project[]
-  profile      UserProfile?
+  accounts                Account[]
+  sessions                Session[]
+  educations              Education[]
+  experiences             Experience[]
+  achievements            Achievement[]
+  skills                  Skill[]
+  languages               Language[]
+  projects                Project[]
+  profile                 UserProfile?
+  portfolios              Portfolio[]
+  portfolioCustomizations PortfolioCustomization[]
 
   @@map("users")
 }
@@ -189,69 +191,81 @@ model Project {
   @@map("projects")
 }
 
-model PortfolioTemplate {
-  id          String  @id @default(cuid())
-  name        String
-  slug        String  @unique
+// Template Category model
+model TemplateCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique
+  slug        String   @unique
   description String?
-  thumbnail   String? // Preview image URL
-  category    String // e.g., "minimal", "creative", "corporate"
-
-  // Template structure
-  sections TemplateSection[]
-  styles   Json? // Global styles/theme
-
-  // Metadata
-  isPublished Boolean @default(false)
-  isPremium   Boolean @default(false)
-  downloads   Int     @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  portfolios Portfolio[]
-
-  @@index([slug])
-  @@index([category])
+  templates Template[]
 }
 
-model TemplateSection {
-  id         String            @id @default(cuid())
-  templateId String
-  template   PortfolioTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+// Template model
+model Template {
+  id          String           @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  code        String           @db.Text
+  thumbnail   String?
+  preview     String?
+  published   Boolean          @default(false)
+  categoryId  String           @db.Uuid
+  category    TemplateCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
-  name  String // e.g., "hero", "about", "projects", "contact"
-  type  String // Section type
-  order Int // Display order
+  // Relations
+  portfolios     Portfolio[]
+  customizations PortfolioCustomization[]
 
-  // Section configuration
-  config     Json // Section-specific settings
-  isRequired Boolean @default(false)
-  isEnabled  Boolean @default(true)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([templateId])
+  @@index([categoryId])
+  @@index([published])
 }
 
+// Portfolio model
 model Portfolio {
-  id         String            @id @default(cuid())
-  userId     String // User who owns this portfolio
-  templateId String
-  template   PortfolioTemplate @relation(fields: [templateId], references: [id])
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId String   @db.Uuid
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  title      String
+  slug       String   @unique
+  published  Boolean  @default(false)
+  viewCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  // Custom data
-  title String
-  slug  String @unique
-  data  Json // User's custom content for each section
+  // Relations
+  customizations PortfolioCustomization[]
 
-  isPublished Boolean @default(false)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  @@unique([userId, slug])
   @@index([userId])
-  @@index([slug])
+  @@index([templateId])
+  @@index([published])
+}
+
+// Portfolio Customization model - stores user customizations
+model PortfolioCustomization {
+  id          String    @id @default(uuid()) @db.Uuid
+  portfolioId String    @db.Uuid
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  templateId  String    @db.Uuid
+  template    Template  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  userId      String    @db.Uuid
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fieldName   String
+  fieldValue  String    @db.Text
+  fieldType   String // text, textarea, color, etc.
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([portfolioId, fieldName])
+  @@index([portfolioId])
+  @@index([templateId])
+  @@index([userId])
 }

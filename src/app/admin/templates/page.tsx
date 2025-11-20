@@ -1,157 +1,126 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { MOCK_TEMPLATES } from "@/lib/mock-data";
 import Link from "next/link";
+import { Template } from "@/types/template/templateTypes";
+import { TemplateCard } from "@/components/admin/template/TemplateCard";
 
-type Template = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  thumbnail: string | null;
-  category: string;
-  isPublished: boolean;
-  isPremium: boolean;
-  downloads: number;
-  createdAt: string;
-  _count: {
-    portfolios: number;
+export default function AdminDashboard() {
+  const [templates, setTemplates] = useState<Template[]>(MOCK_TEMPLATES);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(
+    null
+  );
+
+  const handleDelete = (id: string) => {
+    setTemplates(templates.filter((t) => t.id !== id));
+    setShowDeleteConfirm(null);
   };
-};
-
-export default function TemplatesPage() {
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
-
-  const fetchTemplates = async () => {
-    try {
-      const res = await fetch("/api/admin/templates");
-      const data = await res.json();
-      if (data.success) {
-        setTemplates(data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching templates:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this template?")) return;
-
-    try {
-      const res = await fetch(`/api/admin/templates/${id}`, {
-        method: "DELETE",
-      });
-
-      if (res.ok) {
-        fetchTemplates();
-      }
-    } catch (error) {
-      console.error("Error deleting template:", error);
-    }
-  };
-
-  const togglePublish = async (id: string, currentStatus: boolean) => {
-    try {
-      const res = await fetch(`/api/admin/templates/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isPublished: !currentStatus }),
-      });
-
-      if (res.ok) {
-        fetchTemplates();
-      }
-    } catch (error) {
-      console.error("Error updating template:", error);
-    }
-  };
-
-  if (loading) {
-    return <div className="p-8">Loading templates...</div>;
-  }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Portfolio Templates</h1>
-        <Link
-          href="/admin/templates/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Create Template
-        </Link>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b border-border py-8 px-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
+            <p className="text-muted-foreground">Manage portfolio templates</p>
+          </div>
+          <Link
+            href="/admin/templates/create"
+            className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-semibold"
+          >
+            Create Template
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {templates.map((template) => (
-          <div key={template.id} className="border rounded-lg p-4 shadow">
-            {template.thumbnail && (
-              <img
-                src={template.thumbnail}
-                alt={template.name}
-                className="w-full h-48 object-cover rounded mb-4"
-              />
-            )}
-            <h3 className="text-xl font-semibold mb-2">{template.name}</h3>
-            <p className="text-gray-600 text-sm mb-4">
-              {template.description || "No description"}
-            </p>
-
-            <div className="flex gap-2 mb-4 text-sm">
-              <span className="bg-gray-200 px-2 py-1 rounded">
-                {template.category}
-              </span>
-              {template.isPublished && (
-                <span className="bg-green-200 px-2 py-1 rounded">
-                  Published
-                </span>
-              )}
-              {template.isPremium && (
-                <span className="bg-yellow-200 px-2 py-1 rounded">Premium</span>
-              )}
+      {/* Stats */}
+      <div className="py-8 px-4 border-b border-border bg-muted/50">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-card p-4 rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground">Total Templates</p>
+              <p className="text-3xl font-bold">{templates.length}</p>
             </div>
-
-            <div className="text-sm text-gray-500 mb-4">
-              <p>Used by: {template._count.portfolios} portfolios</p>
-              <p>Downloads: {template.downloads}</p>
+            <div className="bg-card p-4 rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground">Categories</p>
+              <p className="text-3xl font-bold">
+                {new Set(templates.map((t) => t.category)).size}
+              </p>
             </div>
-
-            <div className="flex gap-2">
-              <Link
-                href={`/admin/templates/${template.id}/edit`}
-                className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-              >
-                Edit
-              </Link>
-              <button
-                onClick={() => togglePublish(template.id, template.isPublished)}
-                className="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600"
-              >
-                {template.isPublished ? "Unpublish" : "Publish"}
-              </button>
-              <button
-                onClick={() => handleDelete(template.id)}
-                className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-              >
-                Delete
-              </button>
+            <div className="bg-card p-4 rounded-lg border border-border">
+              <p className="text-sm text-muted-foreground">Last Updated</p>
+              <p className="text-sm font-semibold">
+                {templates.length > 0
+                  ? new Date(templates[0].updatedAt).toLocaleDateString()
+                  : "N/A"}
+              </p>
             </div>
           </div>
-        ))}
+        </div>
       </div>
 
-      {templates.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          No templates yet. Create your first template!
+      {/* Templates Grid */}
+      <div className="py-12 px-4">
+        <div className="max-w-7xl mx-auto">
+          {templates.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground text-lg mb-4">
+                No templates yet
+              </p>
+              <Link
+                href="/admin/create"
+                className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+              >
+                Create First Template
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {templates.map((template) => (
+                <div key={template.id}>
+                  <TemplateCard
+                    template={template}
+                    showActions={true}
+                    onEdit={() => {
+                      window.location.href = `/admin/templates/edit/${template.id}`;
+                    }}
+                    onDelete={() => setShowDeleteConfirm(template.id)}
+                  />
+                  {showDeleteConfirm === template.id && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                      <div className="bg-card rounded-lg p-6 max-w-sm w-full">
+                        <h2 className="text-xl font-bold mb-4">
+                          Delete Template?
+                        </h2>
+                        <p className="text-muted-foreground mb-6">
+                          This action cannot be undone. The template "
+                          {template.name}" will be permanently deleted.
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                          <button
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="px-4 py-2 bg-muted text-muted-foreground rounded hover:bg-muted/80"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleDelete(template.id)}
+                            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
