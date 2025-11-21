@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { Role } from "@prisma/client";
-import { cacheTag, revalidateTag, unstable_cache } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 export type UserData = {
   id: string;
