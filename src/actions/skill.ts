@@ -25,6 +25,16 @@ const getCachedSkills = unstable_cache(fetchSkills, ["skills"], {
   tags: ["skills"],
 });
 
+export async function countSkills() {
+  try {
+    const totalSkills = await prisma.skill.count();
+    return totalSkills;
+  } catch (error) {
+    console.error("[Skill] Count error:", error);
+    return 0; // fallback if error occurs
+  }
+}
+
 export async function createSkill(data: SkillData) {
   try {
     const session = await auth();

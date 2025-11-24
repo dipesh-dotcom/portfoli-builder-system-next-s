@@ -25,6 +25,16 @@ const getCachedEducations = unstable_cache(fetchEducations, ["educations"], {
   tags: ["educations"],
 });
 
+export async function countEducations() {
+  try {
+    const totalEducations = await prisma.education.count();
+    return totalEducations;
+  } catch (error) {
+    console.error("[Education] Count error:", error);
+    return 0; // fallback if error occurs
+  }
+}
+
 export async function createEducation(data: EducationData) {
   try {
     const session = await auth();

@@ -29,6 +29,16 @@ const getCachedLanguages = unstable_cache(fetchLanguages, ["languages"], {
   tags: ["languages"],
 });
 
+export async function countLanguages() {
+  try {
+    const totalLanguages = await prisma.language.count();
+    return totalLanguages;
+  } catch (error) {
+    console.error("[Language] Count error:", error);
+    return 0; // fallback if error occurs
+  }
+}
+
 export async function createLanguage(data: LanguageData) {
   try {
     const session = await auth();

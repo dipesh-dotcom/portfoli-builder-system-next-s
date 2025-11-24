@@ -56,6 +56,16 @@ export async function createAchievement(data: AchievementData) {
   }
 }
 
+export async function countAchievements() {
+  try {
+    const totalAchievements = await prisma.achievement.count();
+    return totalAchievements;
+  } catch (error) {
+    console.error("[Achievement] Count error:", error);
+    return 0; // fallback if error occurs
+  }
+}
+
 export async function getAchievements() {
   try {
     const session = await auth();

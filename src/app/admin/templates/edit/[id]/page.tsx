@@ -1,30 +1,70 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
-import { MOCK_TEMPLATES, TEMPLATE_CATEGORIES } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { Template, TemplateCategory } from "@/types/template/templateTypes";
+import {
+  getCategoriesAction,
+  getTemplateByIdAction,
+  updateTemplateAction,
+} from "@/actions/templates";
 import { FileUpload } from "@/components/admin/template/FileUpload";
 import { CodeEditor } from "@/components/admin/template/CodeEditor";
 
 export default function EditTemplatePage() {
   const { id } = useParams();
-  const template = MOCK_TEMPLATES.find((t) => t.id === id);
+  const router = useRouter();
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [categories, setCategories] = useState<TemplateCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    name: template?.name || "",
-    description: template?.description || "",
-    category: template?.category || "",
-    thumbnail: template?.thumbnail || "",
-    code: template?.code || "",
+    name: "",
+    description: "",
+    categoryId: "",
+    thumbnail: "",
+    code: "",
   });
 
-  const [thumbnailPreview, setThumbnailPreview] = useState<string>(
-    template?.thumbnail || ""
-  );
-  const [isSaving, setIsSaving] = useState(false);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [templateData, categoriesData] = await Promise.all([
+          getTemplateByIdAction(id as string),
+          getCategoriesAction(),
+        ]);
+
+        if (templateData) {
+          setTemplate(templateData);
+          setFormData({
+            name: templateData.name,
+            description: templateData.description,
+            categoryId: templateData.categoryId,
+            thumbnail: templateData.thumbnail ?? "",
+            code: templateData.code,
+          });
+          setThumbnailPreview(templateData.thumbnail ?? "");
+        }
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error("[v0] Error loading template:", err);
+        setError("Failed to load template");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      loadData();
+    }
+  }, [id]);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -56,18 +96,50 @@ export default function EditTemplatePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
-    console.log("Updating template:", formData);
-    // TODO: Implement template update with API call
-    setIsSaving(false);
+
+    if (!template) return;
+
+    try {
+      setIsSaving(true);
+      setError(null);
+      await updateTemplateAction(template.id, {
+        name: formData.name,
+        description: formData.description,
+        categoryId: formData.categoryId,
+        thumbnail: formData.thumbnail,
+        code: formData.code,
+      });
+      router.push("/admin/templates");
+    } catch (err) {
+      console.error("[v0] Error updating template:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to update template"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-muted-foreground">Loading template...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!template) {
     return (
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-2xl font-bold mb-4">Template not found</h1>
-          <Link href="/admin" className="text-primary hover:underline">
+          {error && <p className="text-red-600 mb-4">{error}</p>}
+          <Link
+            href="/admin/templates"
+            className="text-primary hover:underline"
+          >
             Back to Dashboard
           </Link>
         </div>
@@ -85,6 +157,12 @@ export default function EditTemplatePage() {
         </div>
 
         <h1 className="text-4xl font-bold mb-8">Edit Template</h1>
+
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-6 text-red-700">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -123,15 +201,15 @@ export default function EditTemplatePage() {
                   Category
                 </label>
                 <select
-                  name="category"
-                  value={formData.category}
+                  name="categoryId"
+                  value={formData.categoryId}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
                   required
                 >
                   <option value="">Select a category</option>
-                  {TEMPLATE_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.slug}>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
                   ))}

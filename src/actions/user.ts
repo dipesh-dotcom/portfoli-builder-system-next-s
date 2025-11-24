@@ -30,6 +30,7 @@ const getCachedUsers = unstable_cache(fetchUsers, ["users"], {
 export async function getUsers() {
   try {
     const users = await getCachedUsers();
+    console.log(users);
 
     return { success: true, data: users || [], statusCode: 200 };
   } catch (error) {
@@ -40,6 +41,16 @@ export async function getUsers() {
       data: [],
       statusCode: 500,
     };
+  }
+}
+
+export async function countUsers() {
+  try {
+    const totalUsers = await prisma.user.count();
+    return totalUsers;
+  } catch (error) {
+    console.error("[Users] Count error:", error);
+    return 0; // fallback if error occurs
   }
 }
 

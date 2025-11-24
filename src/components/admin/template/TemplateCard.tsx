@@ -36,7 +36,7 @@ export function TemplateCard({
         </p>
         <div className="flex items-center justify-between">
           <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">
-            {template.category}
+            {template.category?.name}
           </span>
           {showActions && (
             <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>

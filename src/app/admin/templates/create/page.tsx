@@ -1,18 +1,21 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
-import { TEMPLATE_CATEGORIES } from "@/lib/mock-data";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { TemplateCategory } from "@/types/template/templateTypes";
+import { createTemplateAction, getCategoriesAction } from "@/actions/templates";
 import { FileUpload } from "@/components/admin/template/FileUpload";
 import { CodeEditor } from "@/components/admin/template/CodeEditor";
 
 export default function CreateTemplatePage() {
+  const router = useRouter();
+  const [categories, setCategories] = useState<TemplateCategory[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    category: "",
+    categoryId: "",
     thumbnail: "",
     code: `export default function MyTemplate() {
   return (
@@ -26,6 +29,22 @@ export default function CreateTemplatePage() {
 
   const [uploadedFileName, setUploadedFileName] = useState<string>("");
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const data = await getCategoriesAction();
+        setCategories(data);
+      } catch (err) {
+        console.error("[v0] Error loading categories:", err);
+        setError("Failed to load categories");
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -56,22 +75,54 @@ export default function CreateTemplatePage() {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Creating template:", formData);
-    // TODO: Implement template creation with API call
+
+    if (!formData.name || !formData.categoryId || !formData.code) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setError(null);
+      await createTemplateAction({
+        name: formData.name,
+        description: formData.description,
+        categoryId: formData.categoryId,
+        thumbnail: formData.thumbnail,
+        code: formData.code,
+      });
+      router.push("/admin/templates");
+    } catch (err) {
+      console.error("[v0] Error creating template:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to create template"
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
-          <Link href="/admin" className="text-primary hover:underline">
+          <Link
+            href="/admin/templates"
+            className="text-primary hover:underline"
+          >
             ← Back to Dashboard
           </Link>
         </div>
 
         <h1 className="text-4xl font-bold mb-8">Create Template</h1>
+
+        {error && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg mb-6 text-red-700">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -115,15 +166,15 @@ export default function CreateTemplatePage() {
                   Category
                 </label>
                 <select
-                  name="category"
-                  value={formData.category}
+                  name="categoryId"
+                  value={formData.categoryId}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-border rounded-lg bg-background text-foreground"
                   required
                 >
                   <option value="">Select a category</option>
-                  {TEMPLATE_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.slug}>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
                       {cat.name}
                     </option>
                   ))}
@@ -198,9 +249,10 @@ export default function CreateTemplatePage() {
             </Link>
             <button
               type="submit"
-              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-semibold"
+              disabled={isSaving}
+              className="px-6 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 font-semibold disabled:opacity-50"
             >
-              Create Template
+              {isSaving ? "Creating..." : "Create Template"}
             </button>
           </div>
         </form>

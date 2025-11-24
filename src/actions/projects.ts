@@ -21,6 +21,16 @@ const getCachedProjects = unstable_cache(fetchProjects, ["projects"], {
   tags: ["projects"],
 });
 
+export async function countProjects() {
+  try {
+    const totalProjects = await prisma.project.count();
+    return totalProjects;
+  } catch (error) {
+    console.error("[Education] Count error:", error);
+    return 0; // fallback if error occurs
+  }
+}
+
 export async function getProjects() {
   try {
     const session = await auth();

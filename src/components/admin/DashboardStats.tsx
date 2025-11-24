@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Users,
@@ -10,53 +11,87 @@ import {
   Languages,
   FolderOpen,
 } from "lucide-react";
+import { getDashboardStatsAction } from "@/actions/adminDashboard";
+import Loader from "../loader/Loader";
 
-const stats = [
-  {
-    title: "Total Users",
-    value: "124",
-    icon: Users,
-    description: "Active users in system",
-  },
-  {
-    title: "Education Records",
-    value: "342",
-    icon: BookOpen,
-    description: "Total education entries",
-  },
-  {
-    title: "Experience Records",
-    value: "298",
-    icon: Briefcase,
-    description: "Work experiences",
-  },
-  {
-    title: "Achievements",
-    value: "156",
-    icon: Trophy,
-    description: "Certifications & awards",
-  },
-  {
-    title: "Skills",
-    value: "487",
-    icon: Code2,
-    description: "Technical skills",
-  },
-  {
-    title: "Languages",
-    value: "89",
-    icon: Languages,
-    description: "Language entries",
-  },
-  {
-    title: "Projects",
-    value: "203",
-    icon: FolderOpen,
-    description: "Portfolio projects",
-  },
-];
+interface Stat {
+  title: string;
+  value: number;
+  icon: React.ComponentType<any>;
+  description: string;
+}
 
 export default function DashboardStats() {
+  const [statsData, setStatsData] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const data = await getDashboardStatsAction();
+        setStatsData(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStats();
+  }, []);
+
+  if (loading)
+    return (
+      <div>
+        <Loader />
+      </div>
+    );
+
+  const stats: Stat[] = [
+    {
+      title: "Total Users",
+      value: statsData.totalUsers ?? 0,
+      icon: Users,
+      description: "Active users in system",
+    },
+    {
+      title: "Education Records",
+      value: statsData.educationRecords ?? 0,
+      icon: BookOpen,
+      description: "Total education entries",
+    },
+    {
+      title: "Experience Records",
+      value: statsData.experienceRecords ?? 0,
+      icon: Briefcase,
+      description: "Work experiences",
+    },
+    {
+      title: "Achievements",
+      value: statsData.achievements ?? 0,
+      icon: Trophy,
+      description: "Certifications & awards",
+    },
+    {
+      title: "Skills",
+      value: statsData.skills ?? 0,
+      icon: Code2,
+      description: "Technical skills",
+    },
+    {
+      title: "Languages",
+      value: statsData.languages ?? 0,
+      icon: Languages,
+      description: "Language entries",
+    },
+    {
+      title: "Projects",
+      value: statsData.projects ?? 0,
+      icon: FolderOpen,
+      description: "Portfolio projects",
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat) => {

@@ -3,12 +3,27 @@ export interface Template {
   id: string;
   name: string;
   description: string;
-  category: string;
-  thumbnail: string;
+
+  thumbnail?: string | null;
   code: string;
-  preview?: string;
+  preview?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  category: {
+    id: string;
+    name: string;
+    description?: string | null;
+    slug: string;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  template?: {
+    name: string;
+    thumbnail?: string;
+    slug: string;
+    description?: string;
+    categoryId: string;
+  };
 }
 
 export interface TemplateCategory {

@@ -26,6 +26,16 @@ const getCachedExperiences = unstable_cache(fetchExperiences, ["experiences"], {
   tags: ["experiences"],
 });
 
+export async function countExperiences() {
+  try {
+    const totalExperiences = await prisma.experience.count();
+    return totalExperiences;
+  } catch (error) {
+    console.error("[Education] Count error:", error);
+    return 0; // fallback if error occurs
+  }
+}
+
 export async function createExperience(data: ExperienceData) {
   try {
     const session = await auth();

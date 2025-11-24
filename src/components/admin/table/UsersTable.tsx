@@ -22,13 +22,13 @@ import {
 import { UserData, deleteUser } from "@/actions/user";
 import ConfirmDialog from "@/components/cards/ConformationDialog";
 import toast from "react-hot-toast";
-import { UserEditForm } from "../from/UserEditForm";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { UserEditForm } from "../form/UserEditForm";
 
 interface UsersTableProps {
   users: UserData[];
