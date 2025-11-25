@@ -113,7 +113,12 @@ export function UserDashboardLayout({
           <div className="p-6 border-b border-border flex items-center justify-between">
             <div className="flex items-center justify-center h-12 bg-primary/10 rounded-lg flex-1">
               <span className="text-lg font-semibold text-foreground">
-                Logo
+                <span className="text-xl font-bold text-gray-900 dark:text-gray-50 hidden sm:block">
+                  Port
+                  <span className="text-indigo-500 dark:text-indigo-400">
+                    Score
+                  </span>
+                </span>
               </span>
             </div>
             <Button
