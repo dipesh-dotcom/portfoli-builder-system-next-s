@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { GithubIcon, X } from "lucide-react";
 import { GitHubContributionGraph } from "@/components/github/github-contribution-graph";
 import { GitHubActivityTimeline } from "@/components/github/github-activity-timeline";
+import GitHubVideoReport from "@/components/github/GitHubVideoReport";
 
 const STORAGE_KEY = "github_username";
 
@@ -14,6 +15,7 @@ export default function DashboardContent() {
   const [username, setUsername] = useState("");
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [showVideo, setShowVideo] = useState(false);
 
   // Load saved username on component mount
   useEffect(() => {
@@ -109,6 +111,8 @@ export default function DashboardContent() {
         {/* Dashboard Content */}
         {username ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Generate Video */}
+
             <div className="lg:col-span-2">
               <GitHubContributionGraph username={username} />
             </div>
@@ -129,6 +133,27 @@ export default function DashboardContent() {
           </Card>
         )}
       </div>
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Generate GitHub Report Video</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={() => setShowVideo(true)} disabled={!username}>
+            Generate Video Report
+          </Button>
+          {!username && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Enter a GitHub username first.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+      {showVideo && (
+        <GitHubVideoReport
+          username={username}
+          onClose={() => setShowVideo(false)}
+        />
+      )}
     </main>
   );
 }

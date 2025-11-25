@@ -30,7 +30,6 @@ const getCachedUsers = unstable_cache(fetchUsers, ["users"], {
 export async function getUsers() {
   try {
     const users = await getCachedUsers();
-    console.log(users);
 
     return { success: true, data: users || [], statusCode: 200 };
   } catch (error) {
